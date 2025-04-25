@@ -1,0 +1,75 @@
+[0.027s] Invoking command in '/home/vboxuser/ENPM673_final_project/group2_ws/build/enpm673_final_proj': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/vboxuser/ENPM673_final_project/group2_ws/build/enpm673_final_proj -- -j2 -l2
+[0.096s] [ 50%] Built target cpp_enpm673_final_proj
+[0.131s] [ 50%] Built target ament_cmake_python_copy_enpm673_module
+[0.184s] [100%] Built target animated_box
+[0.388s] running egg_info
+[0.388s] writing enpm673_module.egg-info/PKG-INFO
+[0.388s] writing dependency_links to enpm673_module.egg-info/dependency_links.txt
+[0.388s] writing top-level names to enpm673_module.egg-info/top_level.txt
+[0.390s] reading manifest file 'enpm673_module.egg-info/SOURCES.txt'
+[0.393s] writing manifest file 'enpm673_module.egg-info/SOURCES.txt'
+[0.421s] [100%] Built target ament_cmake_python_build_enpm673_module_egg
+[0.443s] Invoked command in '/home/vboxuser/ENPM673_final_project/group2_ws/build/enpm673_final_proj' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/vboxuser/ENPM673_final_project/group2_ws/build/enpm673_final_proj -- -j2 -l2
+[0.456s] Invoking command in '/home/vboxuser/ENPM673_final_project/group2_ws/build/enpm673_final_proj': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/vboxuser/ENPM673_final_project/group2_ws/build/enpm673_final_proj
+[0.468s] -- Install configuration: ""
+[0.468s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/lib/enpm673_final_proj/cpp_enpm673_final_proj
+[0.468s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/environment/pythonpath.sh
+[0.468s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/environment/pythonpath.dsv
+[0.468s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module-0.0.0-py3.10.egg-info
+[0.470s] -- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module-0.0.0-py3.10.egg-info/top_level.txt
+[0.470s] -- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module-0.0.0-py3.10.egg-info/dependency_links.txt
+[0.472s] -- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module-0.0.0-py3.10.egg-info/SOURCES.txt
+[0.473s] -- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module-0.0.0-py3.10.egg-info/PKG-INFO
+[0.473s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module
+[0.473s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module/enpm673_final_proj.py
+[0.473s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module/__init__.py
+[0.498s] Listing '/home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module'...
+[0.501s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/lib/enpm673_final_proj/enpm673_final_proj_main.py
+[0.502s] -- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/lib/enpm673_final_proj/directional_motion.py
+[0.502s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/launch/enpm673_world.launch.py
+[0.506s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/lib/enpm673_final_proj/libanimated_box.so
+[0.506s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/worlds/enpm673.world
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/worlds/animated_box.world
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/floor_tile
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/floor_tile/model.sdf
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/floor_tile/model.config
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/checkerboard_6_8_0_03
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/checkerboard_6_8_0_03/model.config
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/checkerboard_6_8_0_03/checkerboard.sdf
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/lane_markings
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/lane_markings/model.sdf
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/lane_markings/model.config
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/textured_floor
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/textured_floor/model.sdf
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/textured_floor/model.config
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/umd_turtlebot3_waffle_pi
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/umd_turtlebot3_waffle_pi/model.sdf
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/umd_turtlebot3_waffle_pi/model.config
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/paper_letter_size
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/paper_letter_size/model.sdf
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/paper_letter_size/model.config
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/aruco_marker
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/aruco_marker/materials
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/aruco_marker/materials/scripts
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/aruco_marker/materials/scripts/marker.material
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/aruco_marker/materials/textures
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/aruco_marker/materials/textures/marker.png
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/aruco_marker/model.sdf
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/aruco_marker/model.config
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/ament_index/resource_index/package_run_dependencies/enpm673_final_proj
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/ament_index/resource_index/parent_prefix_path/enpm673_final_proj
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/environment/ament_prefix_path.sh
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/environment/ament_prefix_path.dsv
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/environment/path.sh
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/environment/path.dsv
+[0.507s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/local_setup.bash
+[0.508s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/local_setup.sh
+[0.508s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/local_setup.zsh
+[0.508s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/local_setup.dsv
+[0.508s] -- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/package.dsv
+[0.514s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/ament_index/resource_index/packages/enpm673_final_proj
+[0.514s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/cmake/enpm673_final_projConfig.cmake
+[0.514s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/cmake/enpm673_final_projConfig-version.cmake
+[0.515s] -- Up-to-date: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/package.xml
+[0.515s] Invoked command in '/home/vboxuser/ENPM673_final_project/group2_ws/build/enpm673_final_proj' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/vboxuser/ENPM673_final_project/group2_ws/build/enpm673_final_proj

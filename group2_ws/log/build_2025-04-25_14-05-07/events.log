@@ -1,0 +1,293 @@
+[0.000000] (-) TimerEvent: {}
+[0.000714] (enpm673_final_proj) JobQueued: {'identifier': 'enpm673_final_proj', 'dependencies': OrderedDict()}
+[0.000746] (enpm673_final_proj) JobStarted: {'identifier': 'enpm673_final_proj'}
+[0.013308] (enpm673_final_proj) JobProgress: {'identifier': 'enpm673_final_proj', 'progress': 'cmake'}
+[0.014308] (enpm673_final_proj) Command: {'cmd': ['/usr/bin/cmake', '/home/vboxuser/ENPM673_final_project/group2_ws/src/enpm673_final_proj', '-DCMAKE_INSTALL_PREFIX=/home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj'], 'cwd': '/home/vboxuser/ENPM673_final_project/group2_ws/build/enpm673_final_proj', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'vboxuser'), ('XDG_SESSION_TYPE', 'wayland'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/vboxuser'), ('OLDPWD', '/home/vboxuser/ENPM673_final_project'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('SYSTEMD_EXEC_PID', '1629'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/vboxuser/ros2_ws/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'vboxuser'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('ROS_SUPER_CLIENT', 'True'), ('USERNAME', 'vboxuser'), ('TERM', 'xterm-256color'), ('GAZEBO_MODEL_PATH', ':turtlebot3_project3/share/turtlebot3_project3/models/'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/home/vboxuser/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin'), ('SESSION_MANAGER', 'local/jammy22:@/tmp/.ICE-unix/1603,unix/jammy22:/tmp/.ICE-unix/1603'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/cee7e083_4cbe_4db6_9a5f_65d9123d7b39'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('RMW_IMPLEMENTATION', 'rmw_fastrtps_cpp'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.BTYN52'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.1075'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('ROS_DOMAIN_ID', '0'), ('AMENT_PREFIX_PATH', '/home/vboxuser/ros2_ws/install/turtlebot3_project3:/home/vboxuser/ros2_ws/install/enpm673_final_proj:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('ROS_AUTOMATIC_DISCOVERY_RANGE', 'SUBNET'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/vboxuser/ENPM673_final_project/group2_ws/build/enpm673_final_proj'), ('TURTLEBOT3_MODEL', 'waffle'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/vboxuser/ros2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/vboxuser/ros2_ws/install/turtlebot3_project3:/home/vboxuser/ros2_ws/install/enpm673_final_proj:/opt/ros/humble')]), 'shell': False}
+[0.100308] (-) TimerEvent: {}
+[0.134742] (enpm673_final_proj) StdoutLine: {'line': b'-- The C compiler identification is GNU 11.4.0\n'}
+[0.201100] (-) TimerEvent: {}
+[0.217963] (enpm673_final_proj) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 11.4.0\n'}
+[0.231325] (enpm673_final_proj) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.302125] (-) TimerEvent: {}
+[0.329761] (enpm673_final_proj) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[0.330020] (enpm673_final_proj) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[0.331186] (enpm673_final_proj) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.331331] (enpm673_final_proj) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.335998] (enpm673_final_proj) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.412951] (-) TimerEvent: {}
+[0.415931] (enpm673_final_proj) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.421349] (enpm673_final_proj) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[0.421455] (enpm673_final_proj) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.421587] (enpm673_final_proj) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.425741] (enpm673_final_proj) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.11 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[0.517904] (-) TimerEvent: {}
+[0.554097] (enpm673_final_proj) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter \n'}
+[0.618635] (-) TimerEvent: {}
+[0.636832] (enpm673_final_proj) StdoutLine: {'line': b'-- Found rclcpp: 16.0.12 (/opt/ros/humble/share/rclcpp/cmake)\n'}
+[0.675912] (enpm673_final_proj) StdoutLine: {'line': b'-- Found rosidl_generator_c: 3.1.6 (/opt/ros/humble/share/rosidl_generator_c/cmake)\n'}
+[0.680437] (enpm673_final_proj) StdoutLine: {'line': b'-- Found rosidl_adapter: 3.1.6 (/opt/ros/humble/share/rosidl_adapter/cmake)\n'}
+[0.688181] (enpm673_final_proj) StdoutLine: {'line': b'-- Found rosidl_generator_cpp: 3.1.6 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)\n'}
+[0.700142] (enpm673_final_proj) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.714152] (enpm673_final_proj) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[0.722556] (-) TimerEvent: {}
+[0.754580] (enpm673_final_proj) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)\n'}
+[0.757787] (enpm673_final_proj) StdoutLine: {'line': b'-- Found rmw_fastrtps_cpp: 6.2.7 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)\n'}
+[0.822695] (-) TimerEvent: {}
+[0.848194] (enpm673_final_proj) StdoutLine: {'line': b'-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  \n'}
+[0.865414] (enpm673_final_proj) StdoutLine: {'line': b'-- Found FastRTPS: /opt/ros/humble/include  \n'}
+[0.906825] (enpm673_final_proj) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_fastrtps_cpp' as default\n"}
+[0.907098] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for pthread.h\n'}
+[0.922955] (-) TimerEvent: {}
+[0.989107] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for pthread.h - found\n'}
+[0.989553] (enpm673_final_proj) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[1.023178] (-) TimerEvent: {}
+[1.066088] (enpm673_final_proj) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success\n'}
+[1.066258] (enpm673_final_proj) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[1.108233] (enpm673_final_proj) StdoutLine: {'line': b'-- Found rclpy: 3.3.16 (/opt/ros/humble/share/rclpy/cmake)\n'}
+[1.114940] (enpm673_final_proj) StderrLine: {'line': b'\x1b[33mCMake Warning (dev) at /usr/share/cmake-3.22/Modules/FindPackageHandleStandardArgs.cmake:438 (message):\n'}
+[1.115080] (enpm673_final_proj) StderrLine: {'line': b'  The package name passed to `find_package_handle_standard_args` (PkgConfig)\n'}
+[1.115114] (enpm673_final_proj) StderrLine: {'line': b'  does not match the name of the calling package (gazebo).  This can lead to\n'}
+[1.115140] (enpm673_final_proj) StderrLine: {'line': b'  problems in calling code that expects `find_package` result variables\n'}
+[1.115165] (enpm673_final_proj) StderrLine: {'line': b'  (e.g., `_FOUND`) to follow a certain pattern.\n'}
+[1.115188] (enpm673_final_proj) StderrLine: {'line': b'Call Stack (most recent call first):\n'}
+[1.115209] (enpm673_final_proj) StderrLine: {'line': b'  /usr/share/cmake-3.22/Modules/FindPkgConfig.cmake:99 (find_package_handle_standard_args)\n'}
+[1.115232] (enpm673_final_proj) StderrLine: {'line': b'  /usr/lib/x86_64-linux-gnu/cmake/gazebo/gazebo-config.cmake:72 (include)\n'}
+[1.115255] (enpm673_final_proj) StderrLine: {'line': b'  CMakeLists.txt:13 (find_package)\n'}
+[1.115280] (enpm673_final_proj) StderrLine: {'line': b'This warning is for project developers.  Use -Wno-dev to suppress it.\n'}
+[1.115302] (enpm673_final_proj) StderrLine: {'line': b'\x1b[0m\n'}
+[1.115383] (enpm673_final_proj) StdoutLine: {'line': b'-- Found PkgConfig: /usr/bin/pkg-config (found version "0.29.2") \n'}
+[1.116336] (enpm673_final_proj) StdoutLine: {'line': b"-- Checking for module 'bullet>=2.82'\n"}
+[1.123266] (-) TimerEvent: {}
+[1.130521] (enpm673_final_proj) StdoutLine: {'line': b'--   Found bullet, version 3.05\n'}
+[1.227153] (-) TimerEvent: {}
+[1.284931] (enpm673_final_proj) StdoutLine: {'line': b'-- Found fcl: /usr/include (found suitable version "0.7.0", minimum required is "0.5.0") \n'}
+[1.327390] (-) TimerEvent: {}
+[1.355128] (enpm673_final_proj) StdoutLine: {'line': b'-- Found assimp: /usr/include (found version "5.2.0") \n'}
+[1.363413] (enpm673_final_proj) StdoutLine: {'line': b'-- Found DART: /usr/include (Required is at least version "6.6") found components: dart \n'}
+[1.388501] (enpm673_final_proj) StdoutLine: {'line': b'-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found suitable version "1.74.0", minimum required is "1.40.0") found components: thread system filesystem program_options regex iostreams date_time \n'}
+[1.410381] (enpm673_final_proj) StdoutLine: {'line': b'-- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found version "3.12.4") \n'}
+[1.413372] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for ignition-math6 -- found version 6.15.1\n'}
+[1.422235] (enpm673_final_proj) StdoutLine: {'line': b'-- Searching for dependencies of ignition-math6\n'}
+[1.422349] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for OGRE...\n'}
+[1.422390] (enpm673_final_proj) StdoutLine: {'line': b'-- OGRE_PREFIX_WATCH changed.\n'}
+[1.426567] (enpm673_final_proj) StdoutLine: {'line': b"-- Checking for module 'OGRE'\n"}
+[1.427421] (-) TimerEvent: {}
+[1.443361] (enpm673_final_proj) StdoutLine: {'line': b'--   Found OGRE, version 1.9.0\n'}
+[1.481874] (enpm673_final_proj) StdoutLine: {'line': b'-- Found Ogre Ghadamon (1.9.0)\n'}
+[1.487830] (enpm673_final_proj) StdoutLine: {'line': b'-- Found OGRE: optimized;/usr/lib/x86_64-linux-gnu/libOgreMain.so;debug;/usr/lib/x86_64-linux-gnu/libOgreMain.so\n'}
+[1.496356] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for OGRE_Paging...\n'}
+[1.500596] (enpm673_final_proj) StdoutLine: {'line': b'-- Found OGRE_Paging: optimized;/usr/lib/x86_64-linux-gnu/libOgrePaging.so;debug;/usr/lib/x86_64-linux-gnu/libOgrePaging.so\n'}
+[1.500968] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for OGRE_Terrain...\n'}
+[1.504307] (enpm673_final_proj) StdoutLine: {'line': b'-- Found OGRE_Terrain: optimized;/usr/lib/x86_64-linux-gnu/libOgreTerrain.so;debug;/usr/lib/x86_64-linux-gnu/libOgreTerrain.so\n'}
+[1.504307] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for OGRE_Property...\n'}
+[1.511307] (enpm673_final_proj) StdoutLine: {'line': b'-- Found OGRE_Property: optimized;/usr/lib/x86_64-linux-gnu/libOgreProperty.so;debug;/usr/lib/x86_64-linux-gnu/libOgreProperty.so\n'}
+[1.511307] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for OGRE_RTShaderSystem...\n'}
+[1.514307] (enpm673_final_proj) StdoutLine: {'line': b'-- Found OGRE_RTShaderSystem: optimized;/usr/lib/x86_64-linux-gnu/libOgreRTShaderSystem.so;debug;/usr/lib/x86_64-linux-gnu/libOgreRTShaderSystem.so\n'}
+[1.514358] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for OGRE_Volume...\n'}
+[1.518307] (enpm673_final_proj) StdoutLine: {'line': b'-- Found OGRE_Volume: optimized;/usr/lib/x86_64-linux-gnu/libOgreVolume.so;debug;/usr/lib/x86_64-linux-gnu/libOgreVolume.so\n'}
+[1.518307] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for OGRE_Overlay...\n'}
+[1.522307] (enpm673_final_proj) StdoutLine: {'line': b'-- Found OGRE_Overlay: optimized;/usr/lib/x86_64-linux-gnu/libOgreOverlay.so;debug;/usr/lib/x86_64-linux-gnu/libOgreOverlay.so\n'}
+[1.581307] (-) TimerEvent: {}
+[1.598686] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for ignition-math6 -- found version 6.15.1\n'}
+[1.600599] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for ignition-transport8 -- found version 8.2.1\n'}
+[1.601168] (enpm673_final_proj) StdoutLine: {'line': b'-- Searching for dependencies of ignition-transport8\n'}
+[1.615307] (enpm673_final_proj) StdoutLine: {'line': b'-- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found suitable version "3.12.4", minimum required is "3") \n'}
+[1.622343] (enpm673_final_proj) StdoutLine: {'line': b'-- Config-file not installed for ZeroMQ -- checking for pkg-config\n'}
+[1.627446] (enpm673_final_proj) StdoutLine: {'line': b"-- Checking for module 'libzmq >= 4'\n"}
+[1.644917] (enpm673_final_proj) StdoutLine: {'line': b'--   Found libzmq , version 4.3.4\n'}
+[1.683022] (-) TimerEvent: {}
+[1.694286] (enpm673_final_proj) StdoutLine: {'line': b'-- Found ZeroMQ: TRUE (Required is at least version "4") \n'}
+[1.697323] (enpm673_final_proj) StdoutLine: {'line': b"-- Checking for module 'uuid'\n"}
+[1.713438] (enpm673_final_proj) StdoutLine: {'line': b'--   Found uuid, version 2.37.2\n'}
+[1.758547] (enpm673_final_proj) StdoutLine: {'line': b'-- Found UUID: TRUE  \n'}
+[1.758805] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for ignition-msgs5 -- found version 5.8.1\n'}
+[1.759386] (enpm673_final_proj) StdoutLine: {'line': b'-- Searching for dependencies of ignition-msgs5\n'}
+[1.773386] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for ignition-math6 -- found version 6.15.1\n'}
+[1.780602] (enpm673_final_proj) StdoutLine: {'line': b"-- Checking for module 'tinyxml2'\n"}
+[1.783337] (-) TimerEvent: {}
+[1.795401] (enpm673_final_proj) StdoutLine: {'line': b'--   Found tinyxml2, version 9.0.0\n'}
+[1.838267] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for ignition-msgs5 -- found version 5.8.1\n'}
+[1.840368] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for ignition-common3 -- found version 3.14.0\n'}
+[1.840961] (enpm673_final_proj) StdoutLine: {'line': b'-- Searching for dependencies of ignition-common3\n'}
+[1.841428] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for dlfcn.h - found\n'}
+[1.842111] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for libdl - found\n'}
+[1.843426] (enpm673_final_proj) StdoutLine: {'line': b'-- Found DL: TRUE  \n'}
+[1.854320] (enpm673_final_proj) StdoutLine: {'line': b'-- Found tinyobjloader: /usr/lib/x86_64-linux-gnu/cmake/tinyobjloader/tinyobjloader-config.cmake (found version "2.0.0") \n'}
+[1.854545] (enpm673_final_proj) StdoutLine: {'line': b'-- Searching for <ignition-common3> component [graphics]\n'}
+[1.856098] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for ignition-common3-graphics -- found version 3.14.0\n'}
+[1.856746] (enpm673_final_proj) StdoutLine: {'line': b'-- Searching for dependencies of ignition-common3-graphics\n'}
+[1.863595] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for ignition-math6 -- found version 6.15.1\n'}
+[1.863783] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for ignition-fuel_tools4 -- found version 4.4.0\n'}
+[1.864214] (enpm673_final_proj) StdoutLine: {'line': b'-- Searching for dependencies of ignition-fuel_tools4\n'}
+[1.884191] (-) TimerEvent: {}
+[1.952766] (enpm673_final_proj) StdoutLine: {'line': b'-- Found CURL: /usr/lib/x86_64-linux-gnu/libcurl.so (found version "7.81.0")  \n'}
+[1.962565] (enpm673_final_proj) StdoutLine: {'line': b"-- Checking for module 'jsoncpp'\n"}
+[1.977012] (enpm673_final_proj) StdoutLine: {'line': b'--   Found jsoncpp, version 1.9.5\n'}
+[1.984330] (-) TimerEvent: {}
+[2.020662] (enpm673_final_proj) StdoutLine: {'line': b'-- Found JSONCPP: TRUE  \n'}
+[2.027043] (enpm673_final_proj) StdoutLine: {'line': b"-- Checking for module 'libzip'\n"}
+[2.044636] (enpm673_final_proj) StdoutLine: {'line': b'--   Found libzip, version 1.7.3\n'}
+[2.084612] (-) TimerEvent: {}
+[2.091864] (enpm673_final_proj) StdoutLine: {'line': b'-- Found ZIP: TRUE  \n'}
+[2.092168] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for ignition-common3 -- found version 3.14.0\n'}
+[2.093005] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for ignition-math6 -- found version 6.15.1\n'}
+[2.093146] (enpm673_final_proj) StdoutLine: {'line': b'-- Looking for ignition-msgs5 -- found version 5.8.1\n'}
+[2.190642] (-) TimerEvent: {}
+[2.232731] (enpm673_final_proj) StdoutLine: {'line': b'-- Configuring done\n'}
+[2.252743] (enpm673_final_proj) StdoutLine: {'line': b'-- Generating done\n'}
+[2.262519] (enpm673_final_proj) StdoutLine: {'line': b'-- Build files have been written to: /home/vboxuser/ENPM673_final_project/group2_ws/build/enpm673_final_proj\n'}
+[2.275081] (enpm673_final_proj) CommandEnded: {'returncode': 0}
+[2.275372] (enpm673_final_proj) JobProgress: {'identifier': 'enpm673_final_proj', 'progress': 'build'}
+[2.275387] (enpm673_final_proj) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/vboxuser/ENPM673_final_project/group2_ws/build/enpm673_final_proj', '--', '-j2', '-l2'], 'cwd': '/home/vboxuser/ENPM673_final_project/group2_ws/build/enpm673_final_proj', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'vboxuser'), ('XDG_SESSION_TYPE', 'wayland'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/vboxuser'), ('OLDPWD', '/home/vboxuser/ENPM673_final_project'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('SYSTEMD_EXEC_PID', '1629'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/vboxuser/ros2_ws/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'vboxuser'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('ROS_SUPER_CLIENT', 'True'), ('USERNAME', 'vboxuser'), ('TERM', 'xterm-256color'), ('GAZEBO_MODEL_PATH', ':turtlebot3_project3/share/turtlebot3_project3/models/'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/home/vboxuser/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin'), ('SESSION_MANAGER', 'local/jammy22:@/tmp/.ICE-unix/1603,unix/jammy22:/tmp/.ICE-unix/1603'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/cee7e083_4cbe_4db6_9a5f_65d9123d7b39'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('RMW_IMPLEMENTATION', 'rmw_fastrtps_cpp'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.BTYN52'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.1075'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('ROS_DOMAIN_ID', '0'), ('AMENT_PREFIX_PATH', '/home/vboxuser/ros2_ws/install/turtlebot3_project3:/home/vboxuser/ros2_ws/install/enpm673_final_proj:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('ROS_AUTOMATIC_DISCOVERY_RANGE', 'SUBNET'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/vboxuser/ENPM673_final_project/group2_ws/build/enpm673_final_proj'), ('TURTLEBOT3_MODEL', 'waffle'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/vboxuser/ros2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/vboxuser/ros2_ws/install/turtlebot3_project3:/home/vboxuser/ros2_ws/install/enpm673_final_proj:/opt/ros/humble')]), 'shell': False}
+[2.290961] (-) TimerEvent: {}
+[2.333963] (enpm673_final_proj) StdoutLine: {'line': b'[ 25%] \x1b[32mBuilding CXX object CMakeFiles/cpp_enpm673_final_proj.dir/src/enpm673_final_proj.cpp.o\x1b[0m\n'}
+[2.342436] (enpm673_final_proj) StdoutLine: {'line': b'[ 25%] Built target ament_cmake_python_copy_enpm673_module\n'}
+[2.378000] (enpm673_final_proj) StdoutLine: {'line': b'[ 75%] \x1b[32m\x1b[1mLinking CXX executable cpp_enpm673_final_proj\x1b[0m\n'}
+[2.378172] (enpm673_final_proj) StdoutLine: {'line': b'[ 75%] \x1b[32mBuilding CXX object CMakeFiles/animated_box.dir/src/animated_box.cpp.o\x1b[0m\n'}
+[2.395880] (-) TimerEvent: {}
+[2.445900] (enpm673_final_proj) StdoutLine: {'line': b'[ 75%] Built target cpp_enpm673_final_proj\n'}
+[2.499073] (-) TimerEvent: {}
+[2.602327] (-) TimerEvent: {}
+[2.642102] (enpm673_final_proj) StdoutLine: {'line': b'running egg_info\n'}
+[2.642322] (enpm673_final_proj) StdoutLine: {'line': b'creating enpm673_module.egg-info\n'}
+[2.642982] (enpm673_final_proj) StdoutLine: {'line': b'writing enpm673_module.egg-info/PKG-INFO\n'}
+[2.643405] (enpm673_final_proj) StdoutLine: {'line': b'writing dependency_links to enpm673_module.egg-info/dependency_links.txt\n'}
+[2.643913] (enpm673_final_proj) StdoutLine: {'line': b'writing top-level names to enpm673_module.egg-info/top_level.txt\n'}
+[2.644002] (enpm673_final_proj) StdoutLine: {'line': b"writing manifest file 'enpm673_module.egg-info/SOURCES.txt'\n"}
+[2.646887] (enpm673_final_proj) StdoutLine: {'line': b"reading manifest file 'enpm673_module.egg-info/SOURCES.txt'\n"}
+[2.647520] (enpm673_final_proj) StdoutLine: {'line': b"writing manifest file 'enpm673_module.egg-info/SOURCES.txt'\n"}
+[2.677937] (enpm673_final_proj) StdoutLine: {'line': b'[ 75%] Built target ament_cmake_python_build_enpm673_module_egg\n'}
+[2.702831] (-) TimerEvent: {}
+[3.393804] (-) TimerEvent: {}
+[4.386814] (-) TimerEvent: {}
+[4.785110] (-) TimerEvent: {}
+[4.889754] (-) TimerEvent: {}
+[4.993627] (-) TimerEvent: {}
+[5.119766] (-) TimerEvent: {}
+[5.391253] (-) TimerEvent: {}
+[5.580644] (-) TimerEvent: {}
+[5.684304] (-) TimerEvent: {}
+[5.826387] (-) TimerEvent: {}
+[6.357060] (-) TimerEvent: {}
+[6.461349] (-) TimerEvent: {}
+[6.565501] (-) TimerEvent: {}
+[6.667509] (-) TimerEvent: {}
+[6.775496] (-) TimerEvent: {}
+[6.927414] (-) TimerEvent: {}
+[7.043041] (-) TimerEvent: {}
+[7.223305] (-) TimerEvent: {}
+[7.323625] (-) TimerEvent: {}
+[7.427468] (-) TimerEvent: {}
+[7.533176] (-) TimerEvent: {}
+[7.639314] (-) TimerEvent: {}
+[7.740284] (-) TimerEvent: {}
+[7.876895] (-) TimerEvent: {}
+[8.060224] (-) TimerEvent: {}
+[8.178493] (-) TimerEvent: {}
+[8.298494] (-) TimerEvent: {}
+[8.399823] (-) TimerEvent: {}
+[8.500255] (-) TimerEvent: {}
+[8.602202] (-) TimerEvent: {}
+[8.706398] (-) TimerEvent: {}
+[8.828515] (-) TimerEvent: {}
+[8.951252] (-) TimerEvent: {}
+[9.081200] (-) TimerEvent: {}
+[9.198551] (-) TimerEvent: {}
+[9.321574] (-) TimerEvent: {}
+[9.423298] (-) TimerEvent: {}
+[9.593159] (-) TimerEvent: {}
+[9.717690] (-) TimerEvent: {}
+[9.897381] (-) TimerEvent: {}
+[10.009627] (-) TimerEvent: {}
+[10.386882] (-) TimerEvent: {}
+[10.501363] (-) TimerEvent: {}
+[10.620991] (-) TimerEvent: {}
+[10.734990] (-) TimerEvent: {}
+[10.870485] (-) TimerEvent: {}
+[10.982329] (-) TimerEvent: {}
+[11.107570] (-) TimerEvent: {}
+[11.234915] (-) TimerEvent: {}
+[11.364357] (-) TimerEvent: {}
+[11.470026] (-) TimerEvent: {}
+[11.570822] (-) TimerEvent: {}
+[11.672646] (-) TimerEvent: {}
+[11.895870] (-) TimerEvent: {}
+[12.046869] (-) TimerEvent: {}
+[12.151618] (-) TimerEvent: {}
+[12.307524] (-) TimerEvent: {}
+[12.424518] (-) TimerEvent: {}
+[12.542628] (-) TimerEvent: {}
+[12.643071] (-) TimerEvent: {}
+[12.700895] (enpm673_final_proj) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX shared library libanimated_box.so\x1b[0m\n'}
+[12.743293] (-) TimerEvent: {}
+[12.835663] (enpm673_final_proj) StdoutLine: {'line': b'[100%] Built target animated_box\n'}
+[12.843698] (-) TimerEvent: {}
+[12.850546] (enpm673_final_proj) CommandEnded: {'returncode': 0}
+[12.850842] (enpm673_final_proj) JobProgress: {'identifier': 'enpm673_final_proj', 'progress': 'install'}
+[12.858404] (enpm673_final_proj) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/vboxuser/ENPM673_final_project/group2_ws/build/enpm673_final_proj'], 'cwd': '/home/vboxuser/ENPM673_final_project/group2_ws/build/enpm673_final_proj', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'vboxuser'), ('XDG_SESSION_TYPE', 'wayland'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/vboxuser'), ('OLDPWD', '/home/vboxuser/ENPM673_final_project'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('SYSTEMD_EXEC_PID', '1629'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/vboxuser/ros2_ws/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'vboxuser'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('ROS_SUPER_CLIENT', 'True'), ('USERNAME', 'vboxuser'), ('TERM', 'xterm-256color'), ('GAZEBO_MODEL_PATH', ':turtlebot3_project3/share/turtlebot3_project3/models/'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/home/vboxuser/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin'), ('SESSION_MANAGER', 'local/jammy22:@/tmp/.ICE-unix/1603,unix/jammy22:/tmp/.ICE-unix/1603'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/cee7e083_4cbe_4db6_9a5f_65d9123d7b39'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('RMW_IMPLEMENTATION', 'rmw_fastrtps_cpp'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.BTYN52'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.1075'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('ROS_DOMAIN_ID', '0'), ('AMENT_PREFIX_PATH', '/home/vboxuser/ros2_ws/install/turtlebot3_project3:/home/vboxuser/ros2_ws/install/enpm673_final_proj:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('ROS_AUTOMATIC_DISCOVERY_RANGE', 'SUBNET'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/vboxuser/ENPM673_final_project/group2_ws/build/enpm673_final_proj'), ('TURTLEBOT3_MODEL', 'waffle'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/vboxuser/ros2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/vboxuser/ros2_ws/install/turtlebot3_project3:/home/vboxuser/ros2_ws/install/enpm673_final_proj:/opt/ros/humble')]), 'shell': False}
+[12.868446] (enpm673_final_proj) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[12.868621] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/lib/enpm673_final_proj/cpp_enpm673_final_proj\n'}
+[12.869097] (enpm673_final_proj) StdoutLine: {'line': b'-- Set runtime path of "/home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/lib/enpm673_final_proj/cpp_enpm673_final_proj" to ""\n'}
+[12.869669] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/environment/pythonpath.sh\n'}
+[12.869896] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/environment/pythonpath.dsv\n'}
+[12.870134] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module-0.0.0-py3.10.egg-info\n'}
+[12.870430] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module-0.0.0-py3.10.egg-info/top_level.txt\n'}
+[12.870588] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module-0.0.0-py3.10.egg-info/dependency_links.txt\n'}
+[12.870798] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module-0.0.0-py3.10.egg-info/SOURCES.txt\n'}
+[12.870975] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module-0.0.0-py3.10.egg-info/PKG-INFO\n'}
+[12.871178] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module\n'}
+[12.871496] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module/enpm673_final_proj.py\n'}
+[12.871578] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module/__init__.py\n'}
+[12.901089] (enpm673_final_proj) StdoutLine: {'line': b"Listing '/home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module'...\n"}
+[12.901426] (enpm673_final_proj) StdoutLine: {'line': b"Compiling '/home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module/__init__.py'...\n"}
+[12.901582] (enpm673_final_proj) StdoutLine: {'line': b"Compiling '/home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/local/lib/python3.10/dist-packages/enpm673_module/enpm673_final_proj.py'...\n"}
+[12.905508] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/lib/enpm673_final_proj/enpm673_final_proj_main.py\n'}
+[12.906149] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/launch/enpm673_world.launch.py\n'}
+[12.906252] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/lib/enpm673_final_proj/libanimated_box.so\n'}
+[12.907887] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/worlds/enpm673.world\n'}
+[12.908781] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/worlds/animated_box.world\n'}
+[12.908916] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models\n'}
+[12.909284] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/floor_tile\n'}
+[12.909455] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/floor_tile/model.sdf\n'}
+[12.909625] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/floor_tile/model.config\n'}
+[12.909902] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/checkerboard_6_8_0_03\n'}
+[12.910000] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/checkerboard_6_8_0_03/model.config\n'}
+[12.910151] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/checkerboard_6_8_0_03/checkerboard.sdf\n'}
+[12.910475] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/lane_markings\n'}
+[12.910728] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/lane_markings/model.sdf\n'}
+[12.910829] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/lane_markings/model.config\n'}
+[12.911132] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/textured_floor\n'}
+[12.911311] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/textured_floor/model.sdf\n'}
+[12.911378] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/textured_floor/model.config\n'}
+[12.911677] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/umd_turtlebot3_waffle_pi\n'}
+[12.912042] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/umd_turtlebot3_waffle_pi/model.sdf\n'}
+[12.912282] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/umd_turtlebot3_waffle_pi/model.config\n'}
+[12.912368] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/paper_letter_size\n'}
+[12.912564] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/paper_letter_size/model.sdf\n'}
+[12.913009] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/paper_letter_size/model.config\n'}
+[12.913085] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/aruco_marker\n'}
+[12.913326] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/aruco_marker/materials\n'}
+[12.913424] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/aruco_marker/materials/scripts\n'}
+[12.913745] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/aruco_marker/materials/scripts/marker.material\n'}
+[12.913838] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/aruco_marker/materials/textures\n'}
+[12.914074] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/aruco_marker/materials/textures/marker.png\n'}
+[12.914401] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/aruco_marker/model.sdf\n'}
+[12.914485] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj//models/aruco_marker/model.config\n'}
+[12.914904] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/ament_index/resource_index/package_run_dependencies/enpm673_final_proj\n'}
+[12.915470] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/ament_index/resource_index/parent_prefix_path/enpm673_final_proj\n'}
+[12.915630] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/environment/ament_prefix_path.sh\n'}
+[12.915902] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/environment/ament_prefix_path.dsv\n'}
+[12.916904] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/environment/path.sh\n'}
+[12.917109] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/environment/path.dsv\n'}
+[12.917288] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/local_setup.bash\n'}
+[12.917903] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/local_setup.sh\n'}
+[12.918805] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/local_setup.zsh\n'}
+[12.918942] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/local_setup.dsv\n'}
+[12.919153] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/package.dsv\n'}
+[12.919551] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/ament_index/resource_index/packages/enpm673_final_proj\n'}
+[12.920340] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/cmake/enpm673_final_projConfig.cmake\n'}
+[12.920440] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/cmake/enpm673_final_projConfig-version.cmake\n'}
+[12.922021] (enpm673_final_proj) StdoutLine: {'line': b'-- Installing: /home/vboxuser/ENPM673_final_project/group2_ws/install/enpm673_final_proj/share/enpm673_final_proj/package.xml\n'}
+[12.928835] (enpm673_final_proj) CommandEnded: {'returncode': 0}
+[12.940350] (enpm673_final_proj) JobEnded: {'identifier': 'enpm673_final_proj', 'rc': 0}
+[12.941779] (-) EventReactorShutdown: {}
