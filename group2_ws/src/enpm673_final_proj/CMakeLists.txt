@@ -39,6 +39,8 @@ ament_python_install_package(enpm673_module)
 install(PROGRAMS
   scripts/enpm673_final_proj_main.py
   scripts/directional_motion.py
+  scripts/directional_motion_tb1.py
+  scripts/directional_motion_tb2.py
   DESTINATION lib/${PROJECT_NAME}
   )
 

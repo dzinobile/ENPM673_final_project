@@ -90,6 +90,8 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/enpm673_final_proj" TYPE PROGRAM FILES
     "/home/vboxuser/ENPM673_final_project/group2_ws/src/enpm673_final_proj/scripts/enpm673_final_proj_main.py"
     "/home/vboxuser/ENPM673_final_project/group2_ws/src/enpm673_final_proj/scripts/directional_motion.py"
+    "/home/vboxuser/ENPM673_final_project/group2_ws/src/enpm673_final_proj/scripts/directional_motion_tb1.py"
+    "/home/vboxuser/ENPM673_final_project/group2_ws/src/enpm673_final_proj/scripts/directional_motion_tb2.py"
     )
 endif()
 

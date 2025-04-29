@@ -107,31 +107,31 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 49,
+				"line" : 51,
 				"parent" : 0
 			},
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 62,
+				"line" : 64,
 				"parent" : 0
 			},
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 69,
+				"line" : 71,
 				"parent" : 0
 			},
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 76,
+				"line" : 78,
 				"parent" : 0
 			},
 			{
 				"command" : 9,
 				"file" : 0,
-				"line" : 84,
+				"line" : 86,
 				"parent" : 0
 			},
 			{
@@ -382,7 +382,9 @@
 			"paths" : 
 			[
 				"scripts/enpm673_final_proj_main.py",
-				"scripts/directional_motion.py"
+				"scripts/directional_motion.py",
+				"scripts/directional_motion_tb1.py",
+				"scripts/directional_motion_tb2.py"
 			],
 			"type" : "file"
 		},
