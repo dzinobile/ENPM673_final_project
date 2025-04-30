@@ -41,6 +41,7 @@ install(PROGRAMS
   scripts/directional_motion.py
   scripts/directional_motion_tb1.py
   scripts/directional_motion_tb2.py
+  scripts/save_video.py
   DESTINATION lib/${PROJECT_NAME}
   )
 

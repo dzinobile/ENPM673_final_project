@@ -1,0 +1,106 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-ada178e54d4e75dc0ae6.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10.2"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "enpm673_final_proj",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_build_enpm673_module_egg::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_build_enpm673_module_egg-Debug-5f70c8f5d0eb03ccfe57.json",
+					"name" : "ament_cmake_python_build_enpm673_module_egg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_copy_enpm673_module::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_copy_enpm673_module-Debug-dbe40986641b771236c9.json",
+					"name" : "ament_cmake_python_copy_enpm673_module",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "animated_box::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-animated_box-Debug-cef2b04e07aa14ff6cb4.json",
+					"name" : "animated_box",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "cpp_enpm673_final_proj::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-cpp_enpm673_final_proj-Debug-edd7784ed1bd9d04226e.json",
+					"name" : "cpp_enpm673_final_proj",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "enpm673_final_proj_uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-enpm673_final_proj_uninstall-Debug-1356b06c8c7d73fa6e16.json",
+					"name" : "enpm673_final_proj_uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-Debug-1113d8aa91b57d1d4e7f.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/vboxuser/ENPM673_final_project/group2_ws/src/enpm673_final_proj/build",
+		"source" : "/home/vboxuser/ENPM673_final_project/group2_ws/src/enpm673_final_proj"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}
