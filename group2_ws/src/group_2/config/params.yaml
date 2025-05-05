@@ -1,0 +1,6 @@
+# /**:
+#   ros__parameters:
+#     horizon_y: 125
+#     threshold: 50
+#     angle_resolution: 0.0174533    # np.pi/180
+#     debug: False
