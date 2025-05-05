@@ -8,6 +8,13 @@ ENPM 673 Final project Repository
 
 ## Installation
 
+Install image_view package
+
+```bash
+sudo apt-get install ros-noetic-image-view
+```
+
+
 Install yolov5 requirements
 ```bash
 cd yolov5/
