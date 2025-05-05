@@ -9,6 +9,9 @@ ENPM 673 Final project Repository
 ## Installation
 
 ```bash
+cd yolov5/
+pip install -r requirements.txt
+
 colcon build  
 source install/setup.bash
 ```
