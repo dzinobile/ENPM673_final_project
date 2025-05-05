@@ -19,6 +19,9 @@ class DirectionalMotion(Node):
         #self.img_pub = self.create_publisher(Image,'/camera/processed_image',10)
         self.calibration_start = False
     c_frames = []
+
+    
+
     def raw_image_callback(self,msg,calibration_frames=c_frames):
     #def raw_image_callback(self,msg):
         aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)

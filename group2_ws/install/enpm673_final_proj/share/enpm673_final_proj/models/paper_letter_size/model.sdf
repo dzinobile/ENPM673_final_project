@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version="1.5">
     <model name='paper_letter_size'>
-    <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+    <pose>0.0 0.0 -0.001 0.0 0.0 0.0</pose>
       <link name='link'>
         <self_collide>0</self_collide>
         <enable_wind>0</enable_wind>
@@ -37,7 +37,7 @@
       <include>
         <name>aruco</name>
         <uri>model://aruco_marker</uri>
-        <pose>0.0 0.0 0.01 1.57 -1.57 -1.57</pose>
+        <pose>0.0 0.0 0.001 1.57 -1.57 -1.57</pose>
       </include>
 
       <allow_auto_disable>1</allow_auto_disable>
