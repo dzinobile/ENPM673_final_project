@@ -2,16 +2,17 @@
 
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage
 from cv_bridge import CvBridge
 import cv2
+import numpy as np
 
 class VideoSaver(Node):
     def __init__(self):
         super().__init__('video_saver')
         self.subscription = self.create_subscription(
-            Image,
-            '/camera/image_raw',
+            CompressedImage,
+            '/tb4_2/oakd/rgb/image_raw/compressed',
             self.image_callback,
             10
         )
@@ -19,17 +20,19 @@ class VideoSaver(Node):
         self.video_writer = cv2.VideoWriter(
             'output_video.mp4',
             cv2.VideoWriter_fourcc(*'mp4v'),  
-            30,  # Frame rate 
-            (640, 480)  # Resolution 
+            10,  # Frame rate 
+            (1280, 720)  # Resolution 
         )
 
     def image_callback(self, msg):
         try:
-            
-            cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
-            
-           
+            np_arr = np.frombuffer(msg.data, np.uint8)
+            #cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
+            cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+            self.get_logger().info("pringing image")
             self.video_writer.write(cv_image)
+           
+            
             
         except Exception as e:
             self.get_logger().error(f'Error: {str(e)}')

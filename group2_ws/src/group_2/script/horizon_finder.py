@@ -25,7 +25,7 @@ DEBUG_DIRS = {
 }
 # Global variables
 MAIN_DEBUG_DIR = "ros2_horizon_debug"
-ANGLE_THRESHOLD = np.pi/6
+ANGLE_THRESHOLD = np.pi/90
 RANSAC_INLIER_THRESHOLD  = 20
 RANSAC_ITERATIONS = 400
 
@@ -34,10 +34,10 @@ class HorizonfinderNode(Node):
     def __init__(self, node_name='horizon_finder'):
         super().__init__(node_name)
         self.cv_bridge = CvBridge()
-        self.subscription = self.create_subscription(Image,'/camera/image_raw', self.frame_cb,10)
-        self.horizon_y_publisher = self.create_publisher(Int32, '/horizon_y', 10)
+        self.subscription = self.create_subscription(Image,'/tb4_1/oakd/rgb/image_raw', self.frame_cb,10)
+        self.horizon_y_publisher = self.create_publisher(Int32, '/tb4_1/horizon_y', 10)
         self.frame_buffer = []
-        self.max_frames = 100
+        self.max_frames = 2
         self.frame_count = 0
         self.prev_horizon_x = None
         self.prev_horizon_y = None
@@ -163,7 +163,7 @@ class HorizonfinderNode(Node):
             for i in range(len(filtered_lines)):
                 for j in range(i+1, len(filtered_lines)):
                     intersection_point = self.intesection_finder(filtered_lines[i], filtered_lines[j])
-                    if intersection_point is not None and -2*width < intersection_point[0] < 2*width and -2*height < intersection_point[1] < 2*height:
+                    if intersection_point is not None:
                         prospective_vanishing_points.append(intersection_point)
                         cv2.circle(vanishing_point_frame, (int(intersection_point[0]), int(intersection_point[1])), 2, (0,0,255), -1)
             if self.debug:

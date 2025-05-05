@@ -31,21 +31,24 @@ class DirectionalMotion(Node):
 
         # Basic control gains (tune these)
         linear_k = 0.5
-        #angular_k = 1.0
+        angular_k = 1.0
 
         # Desired linear and angular velocities
         msg.linear.x = linear_k * z  # Drive forward toward marker
-        #msg.angular.z = -angular_k * yaw  # Rotate to align with marker long axis
+        msg.angular.z = -angular_k * yaw  # Rotate to align with marker long axis
 
         # Optional: limit max speed
         msg.linear.x = np.clip(msg.linear.x, -0.3, 0.3)
-        #msg.angular.z = np.clip(msg.angular.z, -1.0, 1.0)
+        msg.angular.z = np.clip(msg.angular.z, -1.0, 1.0)
 
         # Publish the command
         self.publisher_cmd_vel.publish(msg)
         print(msg)
 
-    def turn_robot
+    # def turn_robot(self,yaw):
+    #     linear_k = 0.5
+    #     msg.angular.z = -angular_k * yaw  # Rotate to align with marker long axis
+        
 
     def raw_image_callback(self,msg):
     #def raw_image_callback(self,msg):

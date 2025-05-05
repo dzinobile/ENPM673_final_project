@@ -152,8 +152,7 @@ class MainNode(Node):
                     x_axis_proj = np.array([marker_x_axis[0], 0, marker_x_axis[2]])
                     x_axis_proj /= np.linalg.norm(x_axis_proj)
                     yaw = np.arctan2(x_axis_proj[0], x_axis_proj[2])
-                    if not stop_sign_detected:
-                        self.move_robot(closest_tvec,yaw)
+                    self.move_robot(closest_tvec,yaw)
             #-----------------------------Regular path following logic end---------------------------
 
             # Final display being published
