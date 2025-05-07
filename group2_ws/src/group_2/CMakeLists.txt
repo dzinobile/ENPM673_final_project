@@ -21,6 +21,7 @@ ament_python_install_package(${PROJECT_NAME}
 
 install(PROGRAMS script/horizon_finder.py
   script/save_video.py
+  script/save_video2.py
   script/main_node.py
   DESTINATION lib/${PROJECT_NAME}
 )

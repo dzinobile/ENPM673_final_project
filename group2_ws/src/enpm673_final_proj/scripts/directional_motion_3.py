@@ -22,8 +22,8 @@ class DirectionalMotion(Node):
         self.previous_z = 10000
         self.previous_yaw = 0
         self.bridge = CvBridge()
-        self.raw_image_sub = self.create_subscription(CompressedImage,'/tb4_2/oakd/rgb/image_raw/compressed',self.raw_image_callback,2)
-        self.publisher_cmd_vel= self.create_publisher(TwistStamped,'/tb4_2/cmd_vel', 10)
+        self.raw_image_sub = self.create_subscription(CompressedImage,'/tb4_1/oakd/rgb/preview/image_raw/compressed',self.raw_image_callback,10)
+        self.publisher_cmd_vel= self.create_publisher(TwistStamped,'/tb4_1/cmd_vel', 10)
         self.iterations = 0
 
 
@@ -84,14 +84,23 @@ class DirectionalMotion(Node):
                 min_distance = float('inf')
                 closest_rvec = None
                 closest_tvec = None
+                centroid_y_old = 0
 
                 rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(aruco_corners, marker_length, self.camera_matrix, dist_coeffs)
-                for rvec,tvec in zip(rvecs,tvecs):
+                
+                for i,(rvec,tvec) in enumerate(zip(rvecs,tvecs)):
                     z = tvec[0][2]  # Forward distance
-                    if z < min_distance:
-                        min_distance = z
+                    corners = aruco_corners[i][0]  # shape: (4, 2)
+                    centroid_x = int(np.mean(corners[:, 0]))
+                    centroid_y = int(np.mean(corners[:, 1]))
+                    if centroid_y > centroid_y_old:
+                        centroid_y_old = centroid_y
                         closest_rvec = rvec
                         closest_tvec = tvec
+                    # if z < min_distance:
+                    #     min_distance = z
+                    #     closest_rvec = rvec
+                    #     closest_tvec = tvec
                 if closest_rvec is not None:
 
                     #cv2.aruco.drawDetectedMarkers(cv_image,aruco_corners,ids)
