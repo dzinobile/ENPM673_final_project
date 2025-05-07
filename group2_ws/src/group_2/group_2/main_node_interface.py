@@ -1,12 +1,12 @@
 from rclpy.node import Node
 from std_msgs.msg import Float32, Int32
 import random
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage
 from cv_bridge import CvBridge
 import cv2
 import torch
 import traceback
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped
 import numpy as np 
 
 class MainNode(Node):
@@ -14,11 +14,11 @@ class MainNode(Node):
     
         super().__init__(node_name)
         self.cv_bridge = CvBridge()
-        self.subscription_raw_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,10)
+        self.subscription_raw_image = self.create_subscription(CompressedImage,'/tb4_2/oakd/rgb/image_raw/compressed', self.main_cb,10)
         #self.subscription_raw_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,10)
-        self.publisher_cmd_vel= self.create_publisher(Twist, '/cmd_vel', 10)
-        self.subscription_horizon_y = self.create_subscription(Int32,'/horizon_y', self.horizon_cb,10)
-        self.publisher_processed = self.create_publisher(Image, '/final_display', 10)
+        self.publisher_cmd_vel= self.create_publisher(TwistStamped, '/tb4_2/cmd_vel', 10)
+        #self.subscription_horizon_y = self.create_subscription(Int32,'/tb4_2/horizon_y', self.horizon_cb,10)
+        self.publisher_processed = self.create_publisher(CompressedImage, '/tb4_2/final_display', 10)
         #self.model = torch.hub.load('yolov5','yolov5s', source='local')
         #self.model.eval()
         self.horizon_not_initialized = True
@@ -32,8 +32,8 @@ class MainNode(Node):
         self.smoothed_u = None 
         self.smoothed_v = None 
         self.alpha = 0.5
-        self.publisher_residual_image = self.create_publisher(Image, '/residual_flow_image', 10)
-        self.publisher_mask_image = self.create_publisher(Image, '/flow_mask_image', 10)
+        self.publisher_residual_image = self.create_publisher(CompressedImage, '/tb4_2/residual_flow_image', 10)
+        self.publisher_mask_image = self.create_publisher(CompressedImage, '/tb4_2/flow_mask_image', 10)
         # --- End of Optical Flow Parameters
 
     # --- Optical flow Helper Functions ---
@@ -114,9 +114,9 @@ class MainNode(Node):
     # --- End of Optical Flow Helper Functions
 
     def stop_robot(self):
-        msg = Twist()
-        msg.linear.x = 0.0   
-        msg.angular.z = 0.0  
+        msg = TwistStamped()
+        msg.twist.linear.x = 0.0   
+        msg.twist.angular.z = 0.0  
         self.publisher_cmd_vel.publish(msg)
         self.get_logger().info("Stopping the TurtleBot")
         return None
@@ -132,8 +132,9 @@ class MainNode(Node):
         #    self.get_logger().info("Waiting for horizon finder to find horizon")
         #    return None
         try:
-            
-            cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, 'bgr8')
+            np_arr = np.frombuffer(msg.data, np.uint8)
+            cv_frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+            #cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, 'bgr8')
             """
             height, width = cv_frame.shape[:2]
             # Drawing the horizon line
@@ -189,9 +190,20 @@ class MainNode(Node):
             flow_image_bgr, mask_image_gray, self.object_detected = self.of_residual_image(residual)
 
             # Publish residual flow and mask
-            residual_flow_msg = self.cv_bridge.cv2_to_imgmsg(flow_image_bgr, encoding='bgr8')
+            residual_flow_msg = CompressedImage()
+            residual_flow_msg.header.stamp = self.get_clock().now().to_msg()
+            residual_flow_msg.format = 'jpeg'
+            _, buffer = cv2.imencode('.jpg', flow_image_bgr)
+            residual_flow_msg.data = np.array(buffer).tobytes()
+            #residual_flow_msg = self.cv_bridge.cv2_to_imgmsg(flow_image_bgr, encoding='bgr8')
             self.publisher_residual_image.publish(residual_flow_msg)
-            mask_msg = self.cv_bridge.cv2_to_imgmsg(mask_image_gray, encoding='mono8')
+
+            mask_msg = CompressedImage()
+            mask_msg.header.stamp = self.get_clock().now().to_msg()
+            mask_msg.format = 'jpeg'
+            _, buffer = cv2.imencode('.jpg', mask_image_gray)
+            mask_msg.data = np.array(buffer).tobytes()
+            #mask_msg = self.cv_bridge.cv2_to_imgmsg(mask_image_gray, encoding='mono8')
             self.publisher_mask_image.publish(mask_msg)
 
 
@@ -213,13 +225,18 @@ class MainNode(Node):
                 cv2.LINE_AA
             )
 
-
+            self.frame1 = self.frame2
 
             if self.object_detected:
                 self.get_logger().info("Object detected")
                 self.stop_robot()  # To stop the robot
                 # Final display being published
-                image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+                image_msg = CompressedImage()
+                image_msg.header.stamp = self.get_clock().now().to_msg()
+                image_msg.format = 'jpeg'
+                _,buffer = cv2.imencode('.jpg',cv_frame)
+                image_msg.data = np.array(buffer).tobytes()
+                #image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
                 self.publisher_processed.publish(image_msg)
                 return None  # Go to next frame
             #-----------------------------Optical Flow logic end-------------------------------------
@@ -233,7 +250,12 @@ class MainNode(Node):
             #-----------------------------Regular path following logic end---------------------------
 
             # Final display being published
-            image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+            image_msg = CompressedImage()
+            image_msg.header.stamp = self.get_clock().now().to_msg()
+            image_msg.format = 'jpeg'
+            _,buffer = cv2.imencode('.jpg',cv_frame)
+            image_msg.data = np.array(buffer).tobytes()
+            #image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
             self.publisher_processed.publish(image_msg)
 
         except Exception as e:
