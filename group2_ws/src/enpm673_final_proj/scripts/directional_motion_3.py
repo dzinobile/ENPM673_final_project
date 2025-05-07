@@ -22,8 +22,8 @@ class DirectionalMotion(Node):
         self.previous_z = 10000
         self.previous_yaw = 0
         self.bridge = CvBridge()
-        self.raw_image_sub = self.create_subscription(CompressedImage,'/tb4_1/oakd/rgb/image_raw/compressed',self.raw_image_callback,2)
-        self.publisher_cmd_vel= self.create_publisher(TwistStamped,'/tb4_1/cmd_vel', 10)
+        self.raw_image_sub = self.create_subscription(CompressedImage,'/tb4_2/oakd/rgb/image_raw/compressed',self.raw_image_callback,2)
+        self.publisher_cmd_vel= self.create_publisher(TwistStamped,'/tb4_2/cmd_vel', 10)
         self.iterations = 0
 
 
@@ -62,10 +62,10 @@ class DirectionalMotion(Node):
         self.publisher_cmd_vel.publish(msg)
 
     def raw_image_callback(self,msg):
-        aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+        aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_5X5_50)
         parameters = cv2.aruco.DetectorParameters()
         dist_coeffs = np.zeros((5,))
-        marker_length = 0.1
+        marker_length = 0.2
         
 
 

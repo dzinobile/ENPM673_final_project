@@ -94,6 +94,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
     "/home/vboxuser/ENPM673_final_project/group2_ws/src/enpm673_final_proj/scripts/directional_motion_tb2.py"
     "/home/vboxuser/ENPM673_final_project/group2_ws/src/enpm673_final_proj/scripts/save_video.py"
     "/home/vboxuser/ENPM673_final_project/group2_ws/src/enpm673_final_proj/scripts/directional_motion_2.py"
+    "/home/vboxuser/ENPM673_final_project/group2_ws/src/enpm673_final_proj/scripts/directional_motion_3.py"
     )
 endif()
 
