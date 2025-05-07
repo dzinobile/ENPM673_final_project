@@ -7,6 +7,8 @@ import cv2
 import torch
 import traceback
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Float64MultiArray
+
 
 class MainNode(Node):
     def __init__(self, node_name='main_node'):
@@ -16,12 +18,17 @@ class MainNode(Node):
         self.subscription_raw_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,10)
         self.subscription_raw_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,10)
         self.publisher_cmd_vel= self.create_publisher(Twist, '/cmd_vel', 10)
-        self.subscription_horizon_y = self.create_subscription(Int32,'/horizon_y', self.horizon_cb,10)
+        # self.subscription_horizon_y = self.create_subscription(Int32,'/horizon_y', self.horizon_cb,10)
+        self.subscription_horizon_line = self.create_subscription(Float64MultiArray, '/horizon_line', self.horizon_cb,1)
+
         self.publisher_processed = self.create_publisher(Image, '/final_display', 10)
         self.model = torch.hub.load('yolov5','yolov5s', source='local')
         self.model.eval()
         self.horizon_not_initialized = True
-        self.horizon_y = None
+        self.x_0 = None 
+        self.y_0 = None
+        self.x_w = None
+        self.y_w = None
         self.object_detected = False
 
     def stop_robot(self):
@@ -35,19 +42,19 @@ class MainNode(Node):
 
     def horizon_cb(self,msg):
         self.horizon_not_initialized = False
-        self.horizon_y = msg.data
-        self.get_logger().info(f"Received Horizon value : {self.horizon_y }")
+        self.x_0, self.y_0, self.x_w, self.y_w = msg.data
+        self.get_logger().info(f"Received Horizon value")
         return None
     
     def main_cb(self,msg):
-        if self.horizon_not_initialized or self.horizon_y is None:
+        if self.horizon_not_initialized :
             self.get_logger().info("Waiting for horizon finder to find horizon")
             return None
         try:
             cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, 'bgr8')
             height, width = cv_frame.shape[:2]
             # Drawing the horizon line
-            cv2.line(cv_frame, (0, self.horizon_y), (width-1, self.horizon_y), (0,255,0), 2)
+            cv2.line(cv_frame, (0,self.y_0), (width,self.y_w), (0,0,255), 2)
 
 
 

@@ -1,0 +1,10 @@
+material Charuco5x7
+{
+  technique
+  {
+    pass
+    {
+      texture_unit { texture charuco_5x7.png }
+    }
+  }
+}

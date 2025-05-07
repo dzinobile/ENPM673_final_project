@@ -40,7 +40,6 @@ class HorizonfinderNode(Node):
         self.subscription = self.create_subscription(Image,'/camera/image_raw', self.frame_cb,10)
         self.publish_horizon = self.create_publisher(Float64MultiArray, '/horizon_line', 1)
         self.horizon_initialized = False
-        self.frame_count=0
 
         self.declare_parameter('debug', False)
         self.debug = (self.get_parameter('debug').value)
@@ -62,7 +61,7 @@ class HorizonfinderNode(Node):
         self.get_logger().info("Horizon finder Initializer initiated")
     
     
-    # @staticmethod
+    @staticmethod
     def detect_charuco(self,cv_frame, board):
         gray_image = cv2.cvtColor(cv_frame, cv2.COLOR_BGR2GRAY)
         corners, ids, _ = aruco.detectMarkers(gray_image, self.charuco_dict)
@@ -165,7 +164,7 @@ class HorizonfinderNode(Node):
     # Callback function of the '/camera/image_raw' topic
     def frame_cb(self, msg):
         # Checking if initialization already done
-        if  self.horizon_initialized:
+        if not self.horizon_initialized:
             self.get_logger().info("Already initialized. Ignoring further frames.")
             self.get_logger().info("Node will now shut down.")
             self.destroy_subscription(self.subscription) 
@@ -176,7 +175,6 @@ class HorizonfinderNode(Node):
         try:
             cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, 'bgr8')
             height, width = cv_frame.shape[:2]
-            self.frame_count += 1
 
             # Debug check
             if self.debug:
