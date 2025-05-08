@@ -12,6 +12,7 @@ import sys
 import numpy as np
 from std_msgs.msg import Float64MultiArray
 from std_msgs.msg import Bool
+import time 
 
 class OpticalNode(Node):
     def __init__(self, node_name='optical_node'):
@@ -22,7 +23,7 @@ class OpticalNode(Node):
         self.cv_bridge = CvBridge()
         self.subscription_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,10)
         self.subscription_horizon_line = self.create_subscription(Float64MultiArray, '/horizon_line', self.horizon_cb,1)
-        self.stop_publisher = self.create_publisher(Bool,'/stop_robot',10)
+        self.stop_publisher = self.create_publisher(Bool,'/stop_robot',1)
         self.horizon_not_initialized = True
         self.x_0 = None 
         self.y_0 = None
@@ -34,6 +35,7 @@ class OpticalNode(Node):
         self.smoothed_u = None 
         self.smoothed_v = None 
         self.alpha = 0.8
+        self.start_time = time.time()
         
         self.publisher_flow_image = self.create_publisher(
             Image,
@@ -95,7 +97,7 @@ class OpticalNode(Node):
         mag_corr = mag - b 
         mag_corr[mag_corr < 0] = 0 
         
-        thresh = 1.0 #Tuning parameter
+        thresh = 5.0 #Tuning parameter
         mask = (mag_corr > thresh)
         activated_vals = mag_corr[mask]
         if activated_vals.size:
@@ -133,14 +135,14 @@ class OpticalNode(Node):
     
     def of_estimate_ego_motion(self):
         u, v = self.smoothed_u.flatten(), self.smoothed_v.flatten()
-        u_est = np.median(u).astype(np.uint8)
-        v_est = np.median(v).astype(np.uint8)
+        u_est = float(np.median(u))
+        v_est = float(np.median(v))
         return u_est, v_est
 
 
 
     def main_cb(self, msg):
-
+        self.get_logger().info(f"Time since initialization (optical) {time.time() - self.start_time}")
 
         if self.horizon_not_initialized:
             self.get_logger().info("Waiting for horizon finder to find horizon")

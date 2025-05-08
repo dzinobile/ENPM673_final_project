@@ -135,7 +135,16 @@ class MainNode(Node):
                 self.get_logger().info("Unsafe motion detected... stopping robot")
                 label = "Unsafe"
                 color = (0, 0, 255)
-                #image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+                cv2.putText(
+                    cv_frame, 
+                    label, 
+                    (10, 30), 
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1.0,
+                    color,
+                    2, 
+                    cv2.LINE_AA
+                        )
                 image_msg = CompressedImage()
                 image_msg.header.stamp = self.get_clock().now().to_msg()
                 image_msg.format = 'jpeg'
@@ -179,7 +188,12 @@ class MainNode(Node):
             if stop_sign_detected:
                 self.get_logger().info("Stop sign detected")
                 self.stop_robot()  # To stop the robot
-                image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+                #image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+                image_msg = CompressedImage()
+                image_msg.header.stamp = self.get_clock().now().to_msg()
+                image_msg.format = 'jpeg'
+                _,buffer = cv2.imencode('.jpg',cv_frame)
+                image_msg.data = np.array(buffer).tobytes()
                 self.publisher_processed.publish(image_msg)
                 return None  # Go to next frame
             #--------------------------------Stop sign logic end--------------------------------
@@ -247,7 +261,12 @@ class MainNode(Node):
                     yaw = 0.0
                     self.aruco_move_robot(tvec,yaw)
                     self.no_aruco_detected += 1
-            image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+            #image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+            image_msg = CompressedImage()
+            image_msg.header.stamp = self.get_clock().now().to_msg()
+            image_msg.format = 'jpeg'
+            _,buffer = cv2.imencode('.jpg',cv_frame)
+            image_msg.data = np.array(buffer).tobytes()
             self.publisher_processed.publish(image_msg)
             #-----------------------------Regular path following logic end---------------------------
 

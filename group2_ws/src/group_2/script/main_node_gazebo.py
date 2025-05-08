@@ -7,7 +7,6 @@ from group_2.main_node_interface_gazebo import (
 )
 
 
-
 def main(args=None):
 
     rclpy.init(args=args)  

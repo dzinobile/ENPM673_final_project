@@ -2,12 +2,12 @@
 from rclpy.node import Node
 from std_msgs.msg import Float32, Int32
 import random
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage
 from cv_bridge import CvBridge
 import cv2
 import torch
 import traceback
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped
 import sys
 import numpy as np
 from std_msgs.msg import Float64MultiArray
@@ -18,11 +18,16 @@ class OpticalNode(Node):
     
         super().__init__(node_name)
 
+        which_robot = int(sys.argv[1])
+        if which_robot == 1:
+            topic_prefix = '/tb4_1'
+        elif which_robot == 2:
+            topic_prefix = '/tb4_2'
 
         self.cv_bridge = CvBridge()
-        self.subscription_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,10)
-        self.subscription_horizon_line = self.create_subscription(Float64MultiArray, '/horizon_line', self.horizon_cb,1)
-        self.stop_publisher = self.create_publisher(Bool,'/stop_robot',10)
+        self.subscription_image = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed', self.main_cb,10)
+        self.subscription_horizon_line = self.create_subscription(Float64MultiArray, topic_prefix+'/horizon_line', self.horizon_cb,1)
+        self.stop_publisher = self.create_publisher(Bool,topic_prefix+'/stop_robot',1)
         self.horizon_not_initialized = True
         self.x_0 = None 
         self.y_0 = None
@@ -36,20 +41,20 @@ class OpticalNode(Node):
         self.alpha = 0.8
         
         self.publisher_flow_image = self.create_publisher(
-            Image,
-            '/flow_image',
+            CompressedImage,
+            topic_prefix+'/flow_image',
             10
         )
 
         self.publisher_residual_image = self.create_publisher(
-            Image, 
-            '/residual_flow_image', 
+            CompressedImage, 
+            topic_prefix+'/residual_flow_image', 
             10
         )
         
         self.publisher_mask_image = self.create_publisher(
-            Image, 
-            '/flow_mask_image', 
+            CompressedImage, 
+            topic_prefix+'/flow_mask_image', 
             10
         )
 
@@ -133,8 +138,8 @@ class OpticalNode(Node):
     
     def of_estimate_ego_motion(self):
         u, v = self.smoothed_u.flatten(), self.smoothed_v.flatten()
-        u_est = np.median(u).astype(np.uint8)
-        v_est = np.median(v).astype(np.uint8)
+        u_est = float(np.median(u))
+        v_est = float(np.median(v))
         return u_est, v_est
 
 
@@ -147,8 +152,9 @@ class OpticalNode(Node):
             return None
         try:
 
-            cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-            cv_frame_gray = cv2.cvtColor(cv_frame, cv2.COLOR_BGR2GRAY)
+            #cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+            np_arr = np.frombuffer(msg.data, np.uint8)
+            cv_frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
             height, width = cv_frame.shape[:2]
 
             if self.frame1 is None: 
@@ -184,7 +190,12 @@ class OpticalNode(Node):
 
 
             
-            flow_msg = self.cv_bridge.cv2_to_imgmsg(flow_image_bgr, encoding='bgr8')
+            #flow_msg = self.cv_bridge.cv2_to_imgmsg(flow_image_bgr, encoding='bgr8')
+            flow_msg = CompressedImage()
+            flow_msg.header.stamp = self.get_clock().now().to_msg()
+            flow_msg.format = 'jpeg'
+            _,buffer = cv2.imencode('.jpg',flow_image_bgr)
+            flow_msg.data = np.array(buffer).tobytes()
             self.publisher_flow_image.publish(flow_msg)
 
             u_est, v_est = self.of_estimate_ego_motion()
@@ -196,41 +207,23 @@ class OpticalNode(Node):
             
             res_image_bgr, mask_image_gray, self.object_detected = self.of_residual_image(residual)
 
-            residual_flow_msg = self.cv_bridge.cv2_to_imgmsg(res_image_bgr, encoding='bgr8')
+            #residual_flow_msg = self.cv_bridge.cv2_to_imgmsg(res_image_bgr, encoding='bgr8')
+            residual_flow_msg = CompressedImage()
+            residual_flow_msg.header.stamp = self.get_clock().now().to_msg()
+            residual_flow_msg.format = 'jpeg'
+            _,buffer = cv2.imencode('.jpg',res_image_bgr)
+            residual_flow_msg.data = np.array(buffer).tobytes()
             self.publisher_residual_image.publish(residual_flow_msg)
 
-            mask_msg = self.cv_bridge.cv2_to_imgmsg(mask_image_gray, encoding='mono8')
+            mask_msg = CompressedImage()
+            mask_msg.header.stamp = self.get_clock().now().to_msg()
+            mask_msg.format = 'jpeg'
+            _,buffer = cv2.imencode('.jpg',mask_image_gray)
+            mask_msg.data = np.array(buffer).tobytes()
             self.publisher_mask_image.publish(mask_msg)
-            # cv2.rectangle(
-            #     cv_frame,
-            #     (x1, y1),
-            #     (x2, y2),
-            #     color=(255, 0, 0),
-            #     thickness=2
-            # )
+
 
             self.frame1 = self.frame2
-
-            # if self.object_detected:
-            #     label = "Unsafe"
-            #     color = (0, 0, 255)
-            # else:
-            #     label = "Safe"
-            #     color = (0, 255, 0)
-            
-            # cv2.putText(
-            #     cv_frame, 
-            #     label, 
-            #     (10, 30), 
-            #     cv2.FONT_HERSHEY_SIMPLEX,
-            #     1.0,
-            #     color,
-            #     2, 
-            #     cv2.LINE_AA
-            # )
-
-
-
 
 
 
@@ -246,9 +239,6 @@ class OpticalNode(Node):
                 
             #-----------------------------Optical Flow logic end-------------------------------------
 
-
-            # image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
-            # self.publisher_processed.publish(image_msg)
 
 
         except Exception as e:

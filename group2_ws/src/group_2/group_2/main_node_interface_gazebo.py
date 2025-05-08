@@ -13,6 +13,8 @@ import numpy as np
 from std_msgs.msg import Float64MultiArray
 from std_msgs.msg import Bool
 
+import time 
+
 class MainNode(Node):
     def __init__(self, node_name='main_node'):
     
@@ -25,7 +27,13 @@ class MainNode(Node):
         self.subscription_horizon_line = self.create_subscription(Float64MultiArray, '/horizon_line', self.horizon_cb,1)
         self.publisher_processed = self.create_publisher(Image,'/final_display', 1)
         self.model = torch.hub.load('yolov5','yolov5s', source='local')
-        self.subscription_optical=self.create_subscription(Bool,'/stop_robot',self.of_cb,10)
+        if torch.cuda.is_available():
+            self.get_logger().info("CUDA is available. Using GPU.")
+            self.model.to('cuda')
+        else:
+            self.get_logger().info("CUDA is not available. Using CPU.")
+
+        self.subscription_optical=self.create_subscription(Bool,'/stop_robot',self.of_cb,1)
         self.model.eval()
         self.horizon_not_initialized = True
         self.x_0 = None 
@@ -61,6 +69,8 @@ class MainNode(Node):
             '/flow_mask_image', 
             10
         )
+
+        self.start_time = time.time()
 
 
 
@@ -110,6 +120,8 @@ class MainNode(Node):
 
     def main_cb(self,msg):
 
+        self.get_logger().info(f"Time since init (main node) {time.time() - self.start_time}")
+
         aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
         parameters = cv2.aruco.DetectorParameters()
         dist_coeffs = np.zeros((5,))
@@ -122,6 +134,7 @@ class MainNode(Node):
         try:
 
             cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+            #cv_frame = cv2.resize(cv_frame,None,fx=0.5,fy=0.5)
             cv_frame_gray = cv2.cvtColor(cv_frame, cv2.COLOR_BGR2GRAY)
             height, width = cv_frame.shape[:2]
             # Drawing the horizon line
@@ -134,6 +147,16 @@ class MainNode(Node):
                 image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
                 self.publisher_processed.publish(image_msg)
                 self.stop_robot()
+                cv2.putText(
+                    cv_frame, 
+                    label, 
+                    (10, 30), 
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1.0,
+                    color,
+                    2, 
+                    cv2.LINE_AA
+                        )
                 return None
             else:
                 label = "Safe"
@@ -152,7 +175,7 @@ class MainNode(Node):
                
 
 
-
+            self.get_logger().info(f"YOLO START AT {time.time() - self.start_time}")
             #--------------------------------Stop sign logic start--------------------------------
             #  Run inference
             results = self.model(cv_frame)
@@ -167,6 +190,7 @@ class MainNode(Node):
                     cv2.rectangle(cv_frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
                     cv2.putText(cv_frame, f"{label} ({conf:.2f})", (x1, y1 - 10),cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)      
             
+            self.get_logger().info(f"YOLO END AT {time.time() - self.start_time}")
             if stop_sign_detected:
                 self.get_logger().info("Stop sign detected")
                 self.stop_robot()  # To stop the robot
@@ -174,7 +198,7 @@ class MainNode(Node):
                 self.publisher_processed.publish(image_msg)
                 return None  # Go to next frame
             #--------------------------------Stop sign logic end--------------------------------
-
+            
 
 
 
