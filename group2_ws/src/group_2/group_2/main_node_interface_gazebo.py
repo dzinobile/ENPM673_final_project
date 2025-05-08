@@ -20,12 +20,12 @@ class MainNode(Node):
 
 
         self.cv_bridge = CvBridge()
-        self.subscription_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,10)
+        self.subscription_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,1)
         self.publisher_cmd_vel= self.create_publisher(Twist,'/cmd_vel', 10)
         self.subscription_horizon_line = self.create_subscription(Float64MultiArray, '/horizon_line', self.horizon_cb,1)
-        self.publisher_processed = self.create_publisher(Image,'/final_display', 10)
+        self.publisher_processed = self.create_publisher(Image,'/final_display', 1)
         self.model = torch.hub.load('yolov5','yolov5s', source='local')
-        self.subscription_optical=self.create_subscription(Bool,'/stop_robot',self.of_cb,1)
+        self.subscription_optical=self.create_subscription(Bool,'/stop_robot',self.of_cb,10)
         self.model.eval()
         self.horizon_not_initialized = True
         self.x_0 = None 
@@ -104,76 +104,7 @@ class MainNode(Node):
         return None
     
 
-    def of_crop(self, gray, wpl=0.15, wph=0.85, hpl=.5, hph=1):
-        H, W = gray.shape
-        return gray[int((self.y_0+self.y_w)/2):int(hph*H), int(wpl*W):int(wph*W)]
-    
-    def of_convert_gray(self, bgr):
-        return cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
-
-    def of_standardize(self, frame):
-        return self.of_crop(self.of_convert_gray(frame))
-    
-    def of_polar(self, flow):
-        return cv2.cartToPolar(flow[..., 0], flow[..., 1])
-
-    def of_flow_image(self):
-        mag, ang = cv2.cartToPolar(self.smoothed_u, self.smoothed_v)
-        hsv = np.zeros((self.smoothed_u.shape[0], self.smoothed_u.shape[1], 3), dtype=np.uint8)
-        hsv[..., 0] = ang * 180/np.pi/2 # 8-bit hue: [0, 360] deg -> [0, 180]
-        hsv[..., 1] = 255
-        hsv[..., 2] = cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX)
-        flow_image_bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
-        return flow_image_bgr
-    
-    def of_residual_image(self, flow):
-
-        detected = False
-        
-        # 1. Convert to polar
-        mag, ang = self.of_polar(flow)
-        # 2. Subtract away the typical value 
-        b = np.percentile(mag, 50) # Typical non-ego flow mag of frame
-        #b = np.average(mag)
-        mag_corr = mag - b 
-        mag_corr[mag_corr < 0] = 0 
-        
-        thresh = 1.0 #Tuning parameter
-        mask = (mag_corr > thresh)
-        activated_vals = mag_corr[mask]
-        if activated_vals.size:
-            activated_average = np.average(activated_vals)
-        else:
-            activated_average = 0.0 
-        
-        percent_full = 100 * mask.mean()
-        self.get_logger().info(f"Percent full: {percent_full: .2f}; Activated Average {activated_average: .2f}")
-
-        if percent_full > 10:
-            self.get_logger().info("Obstacle detected with obstacle flow")
-            detected = True 
-
-        mask_image_gray = (mask * 255).astype(np.uint8)
-
-        # Visualization
-        V = (mag_corr / np.max(mag_corr) * 255).astype(np.uint8)
-        hsv = np.zeros((flow.shape[0], flow.shape[1], 3), dtype=np.uint8)
-        hsv[..., 0] = mask * (ang * 180/np.pi/2).astype(np.uint8)
-        hsv[..., 1] = mask * 255
-        hsv[..., 2] = mask * V
-        flow_image_bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
-
-        #cv2.imshow("Residual image", flow_image_bgr)
-        #cv2.imshow("Mask", (mask * 255).astype(np.uint8))
-        
-        return flow_image_bgr, mask_image_gray, detected
-    
-    
-    def of_estimate_ego_motion(self):
-        u, v = self.smoothed_u.flatten(), self.smoothed_v.flatten()
-        u_est = np.median(u).astype(np.uint8)
-        v_est = np.median(v).astype(np.uint8)
-        return u_est, v_est
+   
 
 
 

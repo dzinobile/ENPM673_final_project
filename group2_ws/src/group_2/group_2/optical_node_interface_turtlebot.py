@@ -182,7 +182,8 @@ class OpticalNode(Node):
 
             flow_image_bgr = self.of_flow_image()
 
-            # Flow publish
+
+            
             flow_msg = self.cv_bridge.cv2_to_imgmsg(flow_image_bgr, encoding='bgr8')
             self.publisher_flow_image.publish(flow_msg)
 
@@ -195,16 +196,42 @@ class OpticalNode(Node):
             
             res_image_bgr, mask_image_gray, self.object_detected = self.of_residual_image(residual)
 
-            # Publish residual
             residual_flow_msg = self.cv_bridge.cv2_to_imgmsg(res_image_bgr, encoding='bgr8')
             self.publisher_residual_image.publish(residual_flow_msg)
 
-            # Publish mask
             mask_msg = self.cv_bridge.cv2_to_imgmsg(mask_image_gray, encoding='mono8')
             self.publisher_mask_image.publish(mask_msg)
+            # cv2.rectangle(
+            #     cv_frame,
+            #     (x1, y1),
+            #     (x2, y2),
+            #     color=(255, 0, 0),
+            #     thickness=2
+            # )
 
-            # Update frame 1
             self.frame1 = self.frame2
+
+            # if self.object_detected:
+            #     label = "Unsafe"
+            #     color = (0, 0, 255)
+            # else:
+            #     label = "Safe"
+            #     color = (0, 255, 0)
+            
+            # cv2.putText(
+            #     cv_frame, 
+            #     label, 
+            #     (10, 30), 
+            #     cv2.FONT_HERSHEY_SIMPLEX,
+            #     1.0,
+            #     color,
+            #     2, 
+            #     cv2.LINE_AA
+            # )
+
+
+
+
 
 
             if self.object_detected:
@@ -217,9 +244,11 @@ class OpticalNode(Node):
                 stop_msg.data = False
                 self.stop_publisher.publish(stop_msg)
                 
+            #-----------------------------Optical Flow logic end-------------------------------------
 
-            
 
+            # image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+            # self.publisher_processed.publish(image_msg)
 
 
         except Exception as e:
