@@ -2,6 +2,9 @@ from rclpy.node import Node
 from std_msgs.msg import Float32, Int32
 import random
 from sensor_msgs.msg import Image
+# -- Optical Flow
+from sensor_msgs.msg import CompressedImage
+# -- End Optical Flow
 from cv_bridge import CvBridge
 import cv2
 import torch
@@ -10,34 +13,60 @@ from geometry_msgs.msg import Twist
 import numpy as np 
 
 class MainNode(Node):
+
     def __init__(self, node_name='main_node'):
     
         super().__init__(node_name)
-        self.cv_bridge = CvBridge()
-        self.subscription_raw_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,10)
-        #self.subscription_raw_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,10)
-        self.publisher_cmd_vel= self.create_publisher(Twist, '/cmd_vel', 10)
-        self.subscription_horizon_y = self.create_subscription(Int32,'/horizon_y', self.horizon_cb,10)
-        self.publisher_processed = self.create_publisher(Image, '/final_display', 10)
-        #self.model = torch.hub.load('yolov5','yolov5s', source='local')
-        #self.model.eval()
-        self.horizon_not_initialized = True
-        self.horizon_y = None
-        
 
-        # --- Optical Flow Parameters
+        self.cv_bridge = CvBridge()
+
+        # --- Optical Flow 
+        self.subscription_image = self.create_subscription(
+            Image,
+            '/camera/image_raw', 
+            self.main_cb,
+            10
+        )
+        
         self.object_detected = False
         self.frame1 = None 
         self.frame2 = None
         self.smoothed_u = None 
         self.smoothed_v = None 
-        self.alpha = 0.5
-        self.publisher_residual_image = self.create_publisher(Image, '/residual_flow_image', 10)
-        self.publisher_mask_image = self.create_publisher(Image, '/flow_mask_image', 10)
-        # --- End of Optical Flow Parameters
+        self.alpha = 0.8
+
+        self.publisher_flow_image = self.create_publisher(
+            Image,
+            '/flow_image',
+            10
+        )
+
+        self.publisher_residual_image = self.create_publisher(
+            Image, 
+            '/residual_flow_image', 
+            10
+        )
+        
+        self.publisher_mask_image = self.create_publisher(
+            Image, 
+            '/flow_mask_image', 
+            10
+        )
+        
+        self.publisher_cmd_vel= self.create_publisher(
+            Twist, 
+            '/cmd_vel', 
+            10
+        )
+        
+        self.publisher_processed = self.create_publisher(
+            Image, 
+            '/final_display', 
+            10
+        )
 
     # --- Optical flow Helper Functions ---
-    def of_crop(self, gray, wpl=0.25, wph=0.75, hpl=.65, hph=1):
+    def of_crop(self, gray, wpl=0.15, wph=0.85, hpl=.5, hph=1):
         H, W = gray.shape
         return gray[int(hpl*H):int(hph*H), int(wpl*W):int(wph*W)]
     
@@ -60,23 +89,25 @@ class MainNode(Node):
         return flow_image_bgr
     
     def of_residual_image(self, flow):
+
         detected = False
-        mag, ang = self.of_polar(flow)
-        b = np.percentile(mag, 50) # Typical non-ego flow mag of frame
-        mag_corr = mag - b
-        mag_corr[mag_corr < 0] = 0
-        mag_corr[mag_corr > np.percentile(mag_corr, 60)].astype(np.uint8)
         
-        thresh = 2.0
+        # 1. Convert to polar
+        mag, ang = self.of_polar(flow)
+        # 2. Subtract away the typical value 
+        b = np.percentile(mag, 50) # Typical non-ego flow mag of frame
+        #b = np.average(mag)
+        mag_corr = mag - b 
+        mag_corr[mag_corr < 0] = 0 
+        
+        thresh = 1.0 #Tuning parameter
         mask = (mag_corr > thresh)
         activated_vals = mag_corr[mask]
         if activated_vals.size:
-            activated_average = np.average(mag_corr[mask])
+            activated_average = np.average(activated_vals)
         else:
             activated_average = 0.0 
         
-
-
         percent_full = 100 * mask.mean()
         self.get_logger().info(f"Percent full: {percent_full: .2f}; Activated Average {activated_average: .2f}")
 
@@ -128,45 +159,30 @@ class MainNode(Node):
         return None
     
     def main_cb(self,msg):
-        #if self.horizon_not_initialized or self.horizon_y is None:
-        #    self.get_logger().info("Waiting for horizon finder to find horizon")
-        #    return None
         try:
-            
-            cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, 'bgr8')
-            """
-            height, width = cv_frame.shape[:2]
-            # Drawing the horizon line
-            cv2.line(cv_frame, (0, self.horizon_y), (width-1, self.horizon_y), (0,255,0), 2)
 
-
-
-            #--------------------------------Stop sign logic start--------------------------------
-            #  Run inference
-            results = self.model(cv_frame)
-            labels = results.names
-            detections = results.pred[0]
-            stop_sign_detected = False
-            for *box, conf, cls in detections:
-                label = labels[int(cls)]
-                if label.lower() == "stop sign":
-                    stop_sign_detected = True
-                    x1, y1, x2, y2 = map(int, box)
-                    cv2.rectangle(cv_frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-                    cv2.putText(cv_frame, f"{label} ({conf:.2f})", (x1, y1 - 10),cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)      
-            if stop_sign_detected:
-                self.get_logger().info("Stop sign detected")
-                self.stop_robot()  # To stop the robot
-                # Final display being published
-                image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
-                self.publisher_processed.publish(image_msg)
-                return None  # Go to next frame
-            #--------------------------------Stop sign logic end--------------------------------
-            """
 
 
             #-----------------------------Optical Flow logic start---------------------------------
             # Optical Flow code
+            if isinstance(msg, Image):
+                cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, 'bgr8')
+            else: # CompressedImage
+                arr = np.frombuffer(msg.data, dtype=np.uint8)
+                cv_frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+
+            H, W = cv_frame.shape[:2]
+            wpl, wph = 0.15, 0.85
+            hpl, hph = 0.5, 1.0
+
+            x1 = int(wpl * W)
+            x2 = int(wph * W)
+            y1 = int(hpl * H)
+            y2 = int(hph * H)
+
+            
+
+
             if self.frame1 is None: 
                 self.frame1 = self.of_standardize(cv_frame)
                 return None
@@ -185,15 +201,30 @@ class MainNode(Node):
             residual = np.copy(flow)
             residual[..., 0] -= u_est 
             residual[..., 1] -= v_est
+            self.get_logger().info(f"DEBUG ego: u_est={u_est:.2f}, v_est={v_est:.2f}")
             
             flow_image_bgr, mask_image_gray, self.object_detected = self.of_residual_image(residual)
 
+            cv2.rectangle(
+                cv_frame,
+                (x1, y1),
+                (x2, y2),
+                color=(255, 0, 0),
+                thickness=2
+            )
             # Publish residual flow and mask
+            flow_msg = self.cv_bridge.cv2_to_imgmsg(flow_image_bgr, encoding='bgr8')
+
+            self.publisher_flow_image.publish(flow_msg)
             residual_flow_msg = self.cv_bridge.cv2_to_imgmsg(flow_image_bgr, encoding='bgr8')
+
             self.publisher_residual_image.publish(residual_flow_msg)
             mask_msg = self.cv_bridge.cv2_to_imgmsg(mask_image_gray, encoding='mono8')
+
             self.publisher_mask_image.publish(mask_msg)
 
+
+            self.frame1 = self.frame2
 
             if self.object_detected:
                 label = "Unsafe"
@@ -213,8 +244,6 @@ class MainNode(Node):
                 cv2.LINE_AA
             )
 
-
-
             if self.object_detected:
                 self.get_logger().info("Object detected")
                 self.stop_robot()  # To stop the robot
@@ -222,6 +251,7 @@ class MainNode(Node):
                 image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
                 self.publisher_processed.publish(image_msg)
                 return None  # Go to next frame
+
             #-----------------------------Optical Flow logic end-------------------------------------
 
 
