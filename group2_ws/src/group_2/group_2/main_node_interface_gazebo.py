@@ -11,6 +11,7 @@ from geometry_msgs.msg import Twist
 import sys
 import numpy as np
 from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import Bool
 
 class MainNode(Node):
     def __init__(self, node_name='main_node'):
@@ -24,6 +25,7 @@ class MainNode(Node):
         self.subscription_horizon_line = self.create_subscription(Float64MultiArray, '/horizon_line', self.horizon_cb,1)
         self.publisher_processed = self.create_publisher(Image,'/final_display', 10)
         self.model = torch.hub.load('yolov5','yolov5s', source='local')
+        self.subscription_optical=self.create_subscription(Bool,'/stop_robot',self.of_cb,1)
         self.model.eval()
         self.horizon_not_initialized = True
         self.x_0 = None 
@@ -60,6 +62,8 @@ class MainNode(Node):
             10
         )
 
+
+
     def stop_robot(self):
         msg = Twist()
         msg.linear.x = 0.0   
@@ -88,7 +92,9 @@ class MainNode(Node):
         # Publish the command
         self.publisher_cmd_vel.publish(msg)
 
-
+    def of_cb(self,msg):
+        self.object_detected = msg.data
+        return None
 
 
     def horizon_cb(self,msg):
@@ -162,11 +168,6 @@ class MainNode(Node):
         
         return flow_image_bgr, mask_image_gray, detected
     
-    def of_optical_flow(self):
-        flow = cv2.calcOpticalFlowFarneback(
-                self.frame1, self.frame2, None, .5, 3, 30, 3, 5, 1.2, 0
-            ) 
-        return flow
     
     def of_estimate_ego_motion(self):
         u, v = self.smoothed_u.flatten(), self.smoothed_v.flatten()
@@ -178,8 +179,6 @@ class MainNode(Node):
 
     def main_cb(self,msg):
 
-
-
         aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
         parameters = cv2.aruco.DetectorParameters()
         dist_coeffs = np.zeros((5,))
@@ -188,20 +187,39 @@ class MainNode(Node):
         if self.horizon_not_initialized:
             self.get_logger().info("Waiting for horizon finder to find horizon")
             return None
+    
         try:
 
             cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
             cv_frame_gray = cv2.cvtColor(cv_frame, cv2.COLOR_BGR2GRAY)
             height, width = cv_frame.shape[:2]
-
-            if self.frame1 is None: 
-                self.frame1 = self.of_standardize(cv_frame)
-                return None
-            self.frame2 = self.of_standardize(cv_frame)
-
-
             # Drawing the horizon line
             cv2.line(cv_frame, (0,int(self.y_0)), (width,int(self.y_w)), (0,0,255), 2)
+
+            if self.object_detected:
+                self.get_logger().info("Unsafe motion detected... stopping robot")
+                label = "Unsafe"
+                color = (0, 0, 255)
+                image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+                self.publisher_processed.publish(image_msg)
+                self.stop_robot()
+                return None
+            else:
+                label = "Safe"
+                color = (0, 255, 0)
+
+                cv2.putText(
+                    cv_frame, 
+                    label, 
+                    (10, 30), 
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1.0,
+                    color,
+                    2, 
+                    cv2.LINE_AA
+                        )
+               
+
 
 
             #--------------------------------Stop sign logic start--------------------------------
@@ -228,78 +246,7 @@ class MainNode(Node):
 
 
 
-            #-----------------------------Optical Flow logic start---------------------------------
-            # Optical Flow code
 
-            wpl, wph = 0.15, 0.85
-            hpl, hph = 0.5, 1.0
-
-            x1 = int(wpl * width)
-            x2 = int(wph * width)
-            y1 = int((self.y_0+self.y_w)/2)
-            y2 = int(hph * height)
-
-
-            flow = self.of_optical_flow()
-            if self.smoothed_u is None:
-                self.smoothed_u = flow[..., 0]
-                self.smoothed_v = flow[..., 1]
-            else:
-                self.smoothed_u = self.alpha * self.smoothed_u + (1 - self.alpha) * flow[..., 0]
-                self.smoothed_v = self.alpha * self.smoothed_v + (1 - self.alpha) * flow[..., 1]
-
-            flow_image_bgr = self.of_flow_image()
-            u_est, v_est = self.of_estimate_ego_motion()
-
-            residual = np.copy(flow)
-            residual[..., 0] -= u_est 
-            residual[..., 1] -= v_est
-            self.get_logger().info(f"DEBUG ego: u_est={u_est:.2f}, v_est={v_est:.2f}")
-            
-            flow_image_bgr, mask_image_gray, self.object_detected = self.of_residual_image(residual)
-
-            cv2.rectangle(
-                cv_frame,
-                (x1, y1),
-                (x2, y2),
-                color=(255, 0, 0),
-                thickness=2
-            )
-
-            self.frame1 = self.frame2
-
-            if self.object_detected:
-                label = "Unsafe"
-                color = (0, 0, 255)
-            else:
-                label = "Safe"
-                color = (0, 255, 0)
-            
-            cv2.putText(
-                cv_frame, 
-                label, 
-                (10, 30), 
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1.0,
-                color,
-                2, 
-                cv2.LINE_AA
-            )
-
-            # Publish residual flow and mask
-
-
-
-
-
-            if self.object_detected:
-                self.get_logger().info("Object detected")
-                self.stop_robot()  # To stop the robot
-                # Final display being published
-                image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
-                self.publisher_processed.publish(image_msg)
-                return None  # Go to next frame
-            #-----------------------------Optical Flow logic end-------------------------------------
 
 
 
@@ -360,19 +307,9 @@ class MainNode(Node):
                     yaw = 0.0
                     self.aruco_move_robot(tvec,yaw)
                     self.no_aruco_detected += 1
-            #-----------------------------Regular path following logic end---------------------------
-
             image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
             self.publisher_processed.publish(image_msg)
-            
-            flow_msg = self.cv_bridge.cv2_to_imgmsg(flow_image_bgr, encoding='bgr8')
-            self.publisher_flow_image.publish(flow_msg)
-
-            residual_flow_msg = self.cv_bridge.cv2_to_imgmsg(flow_image_bgr, encoding='bgr8')
-            self.publisher_residual_image.publish(residual_flow_msg)
-
-            mask_msg = self.cv_bridge.cv2_to_imgmsg(mask_image_gray, encoding='mono8')
-            self.publisher_mask_image.publish(mask_msg)
+            #-----------------------------Regular path following logic end---------------------------
 
         except Exception as e:
             self.get_logger().error(f"Error in processing frame: {str(e)}")
