@@ -48,12 +48,12 @@ class DirectionalMotion(Node):
         self.publisher_cmd_vel.publish(msg)
         
 
-    # def turn_robot(self,yaw):
-    #     print("turn robot")
-    #     msg= Twist()
-    #     msg.angular.z = -0.5* yaw  # Rotate to align with marker long axis
-    #     self.publisher_cmd_vel.publish(msg)
-    #     time.sleep(2)
+    def move_straight(self):
+        msg = Twist()
+        msg = Twist()
+        msg.linear.x = 0.1
+        msg.angular.x = 0.0
+        self.publisher_cmd_vel.publish(msg)
 
     def stop_robot(self):
         msg = Twist()
@@ -62,17 +62,12 @@ class DirectionalMotion(Node):
         self.publisher_cmd_vel.publish(msg)
 
     def raw_image_callback(self,msg):
-    #def raw_image_callback(self,msg):
         aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
         parameters = cv2.aruco.DetectorParameters()
         dist_coeffs = np.zeros((5,))
         marker_length = 0.1
         
 
-
-        #camera_matrix = np.array([[527.09681904, 0, 319.50217002],
-                                  #[0, 30.38209677, 239.49903363],
-                                  #[0, 0, 1]], dtype=np.float32)
         try:
             cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
             cv_image_gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
@@ -84,17 +79,21 @@ class DirectionalMotion(Node):
                 min_distance = float('inf')
                 closest_rvec = None
                 closest_tvec = None
-
+                centroid_y_old = 0
                 rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(aruco_corners, marker_length, self.camera_matrix, dist_coeffs)
-                for rvec,tvec in zip(rvecs,tvecs):
+                for i,(rvec,tvec) in enumerate(zip(rvecs,tvecs)):
                     z = tvec[0][2]  # Forward distance
-                    if z < min_distance:
-                        min_distance = z
+                    corners = aruco_corners[i][0] 
+                    centroid_x = int(np.mean(corners[:, 0]))
+                    centroid_y = int(np.mean(corners[:, 1]))
+                    if centroid_y > centroid_y_old:
+                        centroid_y_old = centroid_y
                         closest_rvec = rvec
                         closest_tvec = tvec
+
+
                 if closest_rvec is not None:
 
-                    #cv2.aruco.drawDetectedMarkers(cv_image,aruco_corners,ids)
                     cv2.drawFrameAxes(cv_image,self.camera_matrix,dist_coeffs,rvec,tvec,0.05)
                     rotation_matrix,_ = cv2.Rodrigues(closest_rvec)
                     marker_x_axis = rotation_matrix[:,0]
@@ -103,10 +102,16 @@ class DirectionalMotion(Node):
                     yaw = np.arctan2(x_axis_proj[0], x_axis_proj[2])
                     z = tvec[0][2]
                     self.move_robot(closest_tvec,yaw)
+                    self.iterations = 0
 
 
             else:
-                self.stop_robot()
+                if self.iterations > 20:
+                    self.stop_robot()
+                    
+                else:
+                    self.move_straight()
+                    self.iterations += 1
 
             
             cv2.imshow("Camera View", cv_image)

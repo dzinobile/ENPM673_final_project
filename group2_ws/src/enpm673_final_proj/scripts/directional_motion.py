@@ -6,87 +6,112 @@ from rclpy.node import Node
 from cv_bridge import CvBridge
 import cv2
 import numpy as np
+from geometry_msgs.msg import Twist
+import time
 
 from enpm673_module.enpm673_final_proj import *
 
 class DirectionalMotion(Node):
     def __init__(self):
         super().__init__('DirectionalMotion')
-        self.camera_matrix = None
+        self.camera_matrix = np.matrix([
+            [610.78565932,   0.        , 154.50548085],
+            [  0.        , 594.07200631, 127.60019182],
+            [  0.        ,   0.        ,   1.        ]])
 
         self.bridge = CvBridge()
-        self.raw_image_sub = self.create_subscription(Image,'/camera/image_raw',self.raw_image_callback,10)
-        #self.img_pub = self.create_publisher(Image,'/camera/processed_image',10)
-        self.calibration_start = False
-    c_frames = []
+        self.raw_image_sub = self.create_subscription(Image,'/camera/image_raw',self.raw_image_callback,2)
+        self.publisher_cmd_vel= self.create_publisher(Twist,'/cmd_vel', 10)
+        self.iterations = 0
 
-    
 
-    def raw_image_callback(self,msg,calibration_frames=c_frames):
-    #def raw_image_callback(self,msg):
+    def move_robot(self,tvec,yaw):
+        msg = Twist()
+         # Extract forward and sideways distances (in camera frame)
+        x = tvec[0][0]   # left-right (positive = right)
+        z = tvec[0][2]   # forward distance (positive = forward)
+        msg.linear.x = 0.1
+        msg.angular.z = 0.0
+        if z < 1:
+            yaw = yaw-0.255
+            print(yaw)
+            angular_k = 0.5
+            msg.angular.z = -angular_k * yaw  # Rotate to align with marker long axis
+            msg.angular.z = np.clip(msg.angular.z,-1,1)
+
+
+        # Publish the command
+        self.publisher_cmd_vel.publish(msg)
+        
+
+    def move_straight(self):
+        msg = Twist()
+        msg = Twist()
+        msg.linear.x = 0.1
+        msg.angular.x = 0.0
+        self.publisher_cmd_vel.publish(msg)
+
+    def stop_robot(self):
+        msg = Twist()
+        msg.linear.x = 0.0
+        msg.angular.z = 0.0
+        self.publisher_cmd_vel.publish(msg)
+
+    def raw_image_callback(self,msg):
         aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
         parameters = cv2.aruco.DetectorParameters()
         dist_coeffs = np.zeros((5,))
         marker_length = 0.1
         
 
-        #camera_matrix = np.array([[527.09681904, 0, 319.50217002],
-                                  #[0, 30.38209677, 239.49903363],
-                                  #[0, 0, 1]], dtype=np.float32)
         try:
             cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-            if self.calibration_start:
-                h,w,_ = cv_image.shape
-                cv_image_gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
-                print(len(calibration_frames))
-                if len(calibration_frames) < 50:
-                    calibration_frames.append(cv_image_gray)
-                    # MOVE ROBOT LEFT AND RIGHT AS WELL
-                elif len(calibration_frames) == 50:
-                    calibration_frames.append(cv_image_gray)
-                    criteria =  (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-                    objp = np.zeros((7*5,3), np.float32)
-                    objp[:,:2] = np.mgrid[0:7,0:5].T.reshape(-1,2)
-                    objpoints = []
-                    imgpoints = []
+            cv_image_gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
 
-                    for i in range(0,50):
-                        c_img = calibration_frames[i].copy()
-                        ret, corners = cv2.findChessboardCorners(c_img,(7,5),cv2.CALIB_CB_ADAPTIVE_THRESH + cv2.CALIB_CB_NORMALIZE_IMAGE)
-                        if ret:
-                            objpoints.append(objp)
-                            #corners2 = cv2.cornerSubPix(c_img,corners,(5,5),(-1,-1),criteria)
-                            #imgpoints.append(corners2)
-                            imgpoints.append(corners)
-                    print(len(objpoints))
-                    print(len(imgpoints))
-                    _, self.camera_matrix, _, _, _= cv2.calibrateCamera(objpoints, imgpoints, c_img.shape[::-1], None, None)
-                    print(self.camera_matrix)
-                
+            aruco_corners, ids, rejected = cv2.aruco.detectMarkers(cv_image_gray,aruco_dict,parameters=parameters)
+
+            if ids is not None and self.camera_matrix is not None:
+                cv2.aruco.drawDetectedMarkers(cv_image,aruco_corners,ids)
+                min_distance = float('inf')
+                closest_rvec = None
+                closest_tvec = None
+                centroid_y_old = 0
+                rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(aruco_corners, marker_length, self.camera_matrix, dist_coeffs)
+                for i,(rvec,tvec) in enumerate(zip(rvecs,tvecs)):
+                    z = tvec[0][2]  # Forward distance
+                    corners = aruco_corners[i][0] 
+                    centroid_x = int(np.mean(corners[:, 0]))
+                    centroid_y = int(np.mean(corners[:, 1]))
+                    if centroid_y > centroid_y_old:
+                        centroid_y_old = centroid_y
+                        closest_rvec = rvec
+                        closest_tvec = tvec
+
+
+                if closest_rvec is not None:
+
+                    cv2.drawFrameAxes(cv_image,self.camera_matrix,dist_coeffs,rvec,tvec,0.05)
+                    rotation_matrix,_ = cv2.Rodrigues(closest_rvec)
+                    marker_x_axis = rotation_matrix[:,0]
+                    x_axis_proj = np.array([marker_x_axis[0], 0, marker_x_axis[2]])
+                    x_axis_proj /= np.linalg.norm(x_axis_proj)
+                    yaw = np.arctan2(x_axis_proj[0], x_axis_proj[2])
+                    z = tvec[0][2]
+                    self.move_robot(closest_tvec,yaw)
+                    self.iterations = 0
+
+
+            else:
+                if self.iterations > 20:
+                    self.stop_robot()
+                    
                 else:
-
-
-                    aruco_corners, ids, rejected = cv2.aruco.detectMarkers(cv_image_gray,aruco_dict,parameters=parameters)
-
-                    if ids is not None and self.camera_matrix is not None:
-                        cv2.aruco.drawDetectedMarkers(cv_image,aruco_corners,ids)
-
-                        rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(aruco_corners, marker_length, self.camera_matrix, dist_coeffs)
-                        for rvec,tvec in zip(rvecs,tvecs):
-                            #cv2.aruco.drawDetectedMarkers(cv_image,aruco_corners,ids)
-                            cv2.drawFrameAxes(cv_image,self.camera_matrix,dist_coeffs,rvec,tvec,0.05)
-                            rotation_matrix,_ = cv2.Rodrigues(rvec)
-                            print("Rotation Vector:\n",rvec)
-                            print("Translation vector:\n",tvec)
-                            print("Rotation matrix:\n", rotation_matrix)
-
-            
+                    self.move_straight()
+                    self.iterations += 1
 
             
             cv2.imshow("Camera View", cv_image)
-            key = cv2.waitKey(1)  & 0xFF
-            if key == ord("w"):
-                self.calibration_start = True
+            cv2.waitKey(1)
         except Exception as e:
             self.get_logger().error(f'Failed to convert image: {e}')
 

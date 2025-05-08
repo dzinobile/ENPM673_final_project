@@ -1,7 +1,7 @@
 from rclpy.node import Node
 from std_msgs.msg import Float32, Int32
 import random
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage
 from cv_bridge import CvBridge
 import cv2
 import torch
@@ -19,11 +19,19 @@ class MainNode(Node):
             topic_prefix = '/tb4_1'
         elif which_robot == 2:
             topic_prefix = '/tb4_2'
+
+        image_type = int(sys.argv[2])
+        if image_type == 1:
+            image_topic = '/oakd/rgb/image_raw/compressed'
+        elif image_type == 2:
+            image_topic = 'oakd/rgb/preview/image_raw/compressed'
+
         self.cv_bridge = CvBridge()
-        self.subscription_raw_image = self.create_subscription(Image,topic_prefix+'/oakd/rgb/preview/image_raw', self.main_cb,10)
+        self.subscription_image_compressed = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/image_raw/compressed', self.main_cb,10)
+        self.subscription_image_variable = self.create_subscription(CompressedImage,topic_prefix+image_topic, self.main_cb,10)
         self.publisher_cmd_vel= self.create_publisher(TwistStamped, topic_prefix+'/cmd_vel', 10)
         self.subscription_horizon_y = self.create_subscription(Int32,topic_prefix+'/horizon_y', self.horizon_cb,10)
-        self.publisher_processed = self.create_publisher(Image, topic_prefix+'/final_display', 10)
+        self.publisher_processed = self.create_publisher(CompressedImage, topic_prefix+'/final_display', 10)
         self.model = torch.hub.load('yolov5','yolov5s', source='local')
         self.model.eval()
         self.horizon_not_initialized = True
@@ -33,6 +41,7 @@ class MainNode(Node):
             [610.78565932,   0.        , 154.50548085],
             [  0.        , 594.07200631, 127.60019182],
             [  0.        ,   0.        ,   1.        ]])
+        self.no_aruco_detected = 0
 
     def stop_robot(self):
         msg = TwistStamped()
@@ -42,23 +51,20 @@ class MainNode(Node):
         self.get_logger().info("Stopping the TurtleBot")
         return None
     
-    def move_robot(self,tvec,yaw):
+    def aruco_move_robot(self,tvec,yaw):
         msg = TwistStamped()
-         # Extract forward and sideways distances (in camera frame)
+        # Forward and sideways distances (in camera frame)
         x = tvec[0][0]   # left-right (positive = right)
         z = tvec[0][2]   # forward distance (positive = forward)
 
-        # Basic control gains (tune these)
-        linear_k = 0.5
-        angular_k = 1.0
-
-        # Desired linear and angular velocities
-        msg.twist.linear.x = linear_k * z  # Drive forward toward marker
-        msg.twist.angular.z = -angular_k * yaw  # Rotate to align with marker long axis
-
-        # Optional: limit max speed
-        msg.twist.linear.x = np.clip(msg.twist.linear.x, -0.3, 0.3)
-        msg.twist.angular.z = np.clip(msg.twist.angular.z, -1.0, 1.0)
+        msg.linear.x = 0.1
+        msg.angular.z = 0.0
+        if z < 1:
+            yaw = yaw-0.255
+            print(yaw)
+            angular_k = 0.5
+            msg.angular.z = -angular_k * yaw  # Rotate to align with marker long axis
+            msg.angular.z = np.clip(msg.angular.z,-1,1)
 
         # Publish the command
         self.publisher_cmd_vel.publish(msg)
@@ -74,10 +80,10 @@ class MainNode(Node):
     
     
     def main_cb(self,msg):
-        aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+        aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_5X5_50)
         parameters = cv2.aruco.DetectorParameters()
         dist_coeffs = np.zeros((5,))
-        marker_length = 0.1
+        marker_length = 0.2
 
         if self.horizon_not_initialized or self.horizon_y is None:
             self.get_logger().info("Waiting for horizon finder to find horizon")
