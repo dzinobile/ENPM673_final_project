@@ -1,0 +1,31 @@
+CONVERT GAZEBO TO TURTLEBOT
+
+from sensor_msgs.msg import Image -> from sensor_msgs.msg import CompressedImage
+
+from geometry_msgs.msg import Twist -> from geometry_msgs.msg import TwistStamped
+
+self.create_subscription(Image,'/camera/image_raw', self.main_cb,10) -> 
+    self.create_subscription(CompressedImage,<INSERT TOPIC HERE>, lambda msg: self.main_cb(msg, "<INSERT MESSAGE DESCRIPTION HERE>"),10)
+    topics are:
+    '/tb4_1/oakd/rgb/image_raw/compressed'
+    '/tb4_2/oakd/rgb/image_raw/compressed'
+    '/tb4_1/oakd/rgb/preview/image_raw/compressed'
+    '/tb4_2/oakd/rgb/preview/image_raw/compressed'
+    add message description so we can make the horizon finder only use the raw image compressed
+
+self.create_publisher(Twist, '/cmd_vel', 10) -> self.create_publisher(TwistSTamped, '<INSERT TOPIC HERE>', 10)
+    topics are '/tb4_1/cmd_vel' or '/tb4_2/cmd_vel'
+
+msg.linear.x -> msg.twist.linear.x
+msg.angular.z -> msg.twist.angular.z
+
+cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, 'bgr8') -> 
+    np_arr = np.frombuffer(msg.data, np.uint8)
+    cv_frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+
+image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8') ->
+    image_msg = CompressedImage()
+    image_msg.header.stamp = self.get_clock().now().to_msg()
+    image_msg.format = 'jpeg'
+    _,buffer = cv2.imencode('.jpg',cv_frame)
+    image_msg.data = np.array(buffer).tobytes()

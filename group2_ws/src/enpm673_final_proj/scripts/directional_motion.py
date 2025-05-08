@@ -72,7 +72,6 @@ class DirectionalMotion(Node):
 
             if ids is not None and self.camera_matrix is not None:
                 cv2.aruco.drawDetectedMarkers(cv_image,aruco_corners,ids)
-                min_distance = float('inf')
                 closest_rvec = None
                 closest_tvec = None
                 centroid_y_old = 0
@@ -96,17 +95,19 @@ class DirectionalMotion(Node):
                     x_axis_proj = np.array([marker_x_axis[0], 0, marker_x_axis[2]])
                     x_axis_proj /= np.linalg.norm(x_axis_proj)
                     yaw = np.arctan2(x_axis_proj[0], x_axis_proj[2])
-                    z = tvec[0][2]
                     self.move_robot(closest_tvec,yaw)
                     self.iterations = 0
 
 
             else:
-                if self.iterations > 20:
+                if self.iterations > 50:
                     self.stop_robot()
                     
                 else:
-                    self.move_straight()
+                    self.get_logger().info("else here")
+                    tvec = [[2.0,2.0,2.0],[2.0,2.0,2.0]]
+                    yaw = 0.0
+                    self.move_robot(tvec,yaw)
                     self.iterations += 1
 
             

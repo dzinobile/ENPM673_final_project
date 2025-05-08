@@ -19,7 +19,7 @@ ament_python_install_package(${PROJECT_NAME}
 
 
 
-install(PROGRAMS script/horizon_finder.py
+install(PROGRAMS script/horizon_finder_gazebo.py
   script/save_video.py
   script/save_video2.py
   script/main_node.py

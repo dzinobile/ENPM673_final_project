@@ -20,15 +20,10 @@ class MainNode(Node):
         elif which_robot == 2:
             topic_prefix = '/tb4_2'
 
-        image_type = int(sys.argv[2])
-        if image_type == 1:
-            image_topic = '/oakd/rgb/image_raw/compressed'
-        elif image_type == 2:
-            image_topic = 'oakd/rgb/preview/image_raw/compressed'
 
         self.cv_bridge = CvBridge()
-        self.subscription_image_compressed = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/image_raw/compressed', self.main_cb,10)
-        self.subscription_image_variable = self.create_subscription(CompressedImage,topic_prefix+image_topic, self.main_cb,10)
+        self.subscription_image_compressed = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/image_raw/compressed', lambda msg: self.main_cb(msg, "raw_compressed"),10)
+        self.subscription_image_variable = self.create_subscription(CompressedImage,topic_prefix+image_topic, lambda msg: self.main_cb(msg, "variable"),10)
         self.publisher_cmd_vel= self.create_publisher(TwistStamped, topic_prefix+'/cmd_vel', 10)
         self.subscription_horizon_y = self.create_subscription(Int32,topic_prefix+'/horizon_y', self.horizon_cb,10)
         self.publisher_processed = self.create_publisher(CompressedImage, topic_prefix+'/final_display', 10)
@@ -57,14 +52,14 @@ class MainNode(Node):
         x = tvec[0][0]   # left-right (positive = right)
         z = tvec[0][2]   # forward distance (positive = forward)
 
-        msg.linear.x = 0.1
-        msg.angular.z = 0.0
+        msg.twist.linear.x = 0.1
+        msg.twist.angular.z = 0.0
         if z < 1:
             yaw = yaw-0.255
             print(yaw)
             angular_k = 0.5
-            msg.angular.z = -angular_k * yaw  # Rotate to align with marker long axis
-            msg.angular.z = np.clip(msg.angular.z,-1,1)
+            msg.twist.angular.z = -angular_k * yaw  # Rotate to align with marker long axis
+            msg.twist.angular.z = np.clip(msg.twist.angular.z,-1,1)
 
         # Publish the command
         self.publisher_cmd_vel.publish(msg)
@@ -79,7 +74,7 @@ class MainNode(Node):
     
     
     
-    def main_cb(self,msg):
+    def main_cb(self,msg,source):
         aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_5X5_50)
         parameters = cv2.aruco.DetectorParameters()
         dist_coeffs = np.zeros((5,))
@@ -89,7 +84,9 @@ class MainNode(Node):
             self.get_logger().info("Waiting for horizon finder to find horizon")
             return None
         try:
-            cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, 'bgr8')
+            
+            np_arr = np.frombuffer(msg.data, np.uint8)
+            cv_frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
             cv_frame_gray = cv2.cvtColor(cv_frame, cv2.COLOR_BGR2GRAY)
             height, width = cv_frame.shape[:2]
             # Drawing the horizon line
@@ -98,6 +95,7 @@ class MainNode(Node):
 
 
             #--------------------------------Stop sign logic start--------------------------------
+            
             #  Run inference
             results = self.model(cv_frame)
             labels = results.names
@@ -110,11 +108,16 @@ class MainNode(Node):
                     x1, y1, x2, y2 = map(int, box)
                     cv2.rectangle(cv_frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
                     cv2.putText(cv_frame, f"{label} ({conf:.2f})", (x1, y1 - 10),cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)      
+            
             if stop_sign_detected:
                 self.get_logger().info("Stop sign detected")
                 self.stop_robot()  # To stop the robot
                 # Final display being published
-                image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+                image_msg = CompressedImage()
+                image_msg.header.stamp = self.get_clock().now().to_msg()
+                image_msg.format = 'jpeg'
+                _, buffer = cv2.imencode('.jpg', cv_frame)
+                image_msg.data = np.array(buffer).tobytes()
                 self.publisher_processed.publish(image_msg)
                 return None  # Go to next frame
             #--------------------------------Stop sign logic end--------------------------------
@@ -127,7 +130,11 @@ class MainNode(Node):
                 self.get_logger().info("Object detected")
                 self.stop_robot()  # To stop the robot
                 # Final display being published
-                image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+                image_msg = CompressedImage()
+                image_msg.header.stamp = self.get_clock().now().to_msg()
+                image_msg.format = 'jpeg'
+                _, buffer = cv2.imencode('.jpg', cv_frame)
+                image_msg.data = np.array(buffer).tobytes()
                 self.publisher_processed.publish(image_msg)
                 return None  # Go to next frame
             #-----------------------------Optical Flow logic end-------------------------------------
@@ -138,32 +145,55 @@ class MainNode(Node):
 
             aruco_corners, ids, rejected = cv2.aruco.detectMarkers(cv_frame_gray,aruco_dict,parameters=parameters)
 
-            if ids is not None and self.camera_matrix is not None:
+            if ids is not None:
                 cv2.aruco.drawDetectedMarkers(cv_frame,aruco_corners,ids)
-                min_distance = float('inf')
                 closest_rvec = None
                 closest_tvec = None
+                centroid_y_old = 0
 
                 rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(aruco_corners, marker_length, self.camera_matrix, dist_coeffs)
-                for rvec,tvec in zip(rvecs,tvecs): #tvec is translation vector [x,y,z] in camera coordinates
+                for i,(rvec,tvec) in enumerate(zip(rvecs,tvecs)):
                     z = tvec[0][2]  # Forward distance
-                    if z < min_distance:
-                        min_distance = z
+                    corners = aruco_corners[i][0] 
+                    centroid_x = int(np.mean(corners[:, 0]))
+                    centroid_y = int(np.mean(corners[:, 1]))
+                    if centroid_y > centroid_y_old:
+                        centroid_y_old = centroid_y
                         closest_rvec = rvec
                         closest_tvec = tvec
+
                 if closest_rvec is not None:
+
                     cv2.drawFrameAxes(cv_frame,self.camera_matrix,dist_coeffs,rvec,tvec,0.05)
                     rotation_matrix,_ = cv2.Rodrigues(closest_rvec)
                     marker_x_axis = rotation_matrix[:,0]
                     x_axis_proj = np.array([marker_x_axis[0], 0, marker_x_axis[2]])
                     x_axis_proj /= np.linalg.norm(x_axis_proj)
                     yaw = np.arctan2(x_axis_proj[0], x_axis_proj[2])
-                    self.move_robot(closest_tvec,yaw)
+                    self.aruco_move_robot(closest_tvec,yaw)
+                    self.no_aruco_detected = 0
+
+            else:
+                if self.no_aruco_detected > 50:
+                    self.stop_robot()
+                    
+                else:
+                    tvec = [[2.0,2.0,2.0],[2.0,2.0,2.0]]
+                    yaw = 0.0
+                    self.aruco_move_robot(tvec,yaw)
+                    self.no_aruco_detected += 1
             #-----------------------------Regular path following logic end---------------------------
 
             # Final display being published
-            image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+            image_msg = CompressedImage()
+            image_msg.header.stamp = self.get_clock().now().to_msg()
+            image_msg.format = 'jpeg'
+            _, buffer = cv2.imencode('.jpg', cv_frame)
+            image_msg.data = np.array(buffer).tobytes()
             self.publisher_processed.publish(image_msg)
+
+            cv2.imshow('display',cv_frame)
+            cv2.waitKey(1)
 
         except Exception as e:
             self.get_logger().error(f"Error in processing frame: {str(e)}")

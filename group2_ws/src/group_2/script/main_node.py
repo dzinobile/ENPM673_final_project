@@ -2,7 +2,7 @@
 import rclpy
 
 # Import the custom PublisherNode class
-from group_2.main_node_interface import (
+from group_2.main_node_interface_gazebo import (
     MainNode,
 )
 
