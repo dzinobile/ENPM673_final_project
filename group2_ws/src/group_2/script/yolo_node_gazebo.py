@@ -2,15 +2,15 @@
 import rclpy
 
 # Import the custom PublisherNode class
-from group_2.main_node_interface_turtlebot import (
-    MainNode,
+from group_2.yolo_node_interface_gazebo import (
+    YoloNode,
 )
 
 
 def main(args=None):
 
     rclpy.init(args=args)  
-    node = MainNode("main_node")  
+    node = YoloNode("yolo_node")  
     rclpy.spin(node)  
     node.destroy_node()  
     rclpy.shutdown() 
