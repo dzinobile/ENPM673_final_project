@@ -12,7 +12,7 @@ import sys
 import numpy as np
 from std_msgs.msg import Float64MultiArray
 from std_msgs.msg import Bool
-
+from rclpy.callback_groups import ReentrantCallbackGroup
 import time 
 
 class MainNode(Node):
@@ -20,58 +20,27 @@ class MainNode(Node):
     
         super().__init__(node_name)
 
-
+        self.multi_thread_group = ReentrantCallbackGroup()
         self.cv_bridge = CvBridge()
-        self.subscription_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,1)
+        self.subscription_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,1,callback_group=self.multi_thread_group)
         self.publisher_cmd_vel= self.create_publisher(Twist,'/cmd_vel', 10)
-        self.subscription_horizon_line = self.create_subscription(Float64MultiArray, '/horizon_line', self.horizon_cb,1)
+        self.subscription_horizon_line = self.create_subscription(Float64MultiArray, '/horizon_line', self.horizon_cb,1,callback_group=self.multi_thread_group)
         self.publisher_processed = self.create_publisher(Image,'/final_display', 1)
-        self.model = torch.hub.load('yolov5','yolov5s', source='local')
-        if torch.cuda.is_available():
-            self.get_logger().info("CUDA is available. Using GPU.")
-            self.model.to('cuda')
-        else:
-            self.get_logger().info("CUDA is not available. Using CPU.")
-
-        self.subscription_optical=self.create_subscription(Bool,'/stop_robot',self.of_cb,1)
-        self.model.eval()
+        self.subscription_optical=self.create_subscription(Bool,'/stop_robot',self.of_cb,1,callback_group=self.multi_thread_group)
+        self.subscription_stop=self.create_subscription(Bool,'/stop_sign',self.stop_sign_cb,1,callback_group=self.multi_thread_group)
         self.horizon_not_initialized = True
+        self.start_time = time.time()
         self.x_0 = None 
         self.y_0 = None
         self.x_w = None
         self.y_w = None
         self.object_detected = False
+        self.stop_sign_detected  = False
         self.camera_matrix = np.matrix([
             [610.78565932,   0.        , 154.50548085],
             [  0.        , 594.07200631, 127.60019182],
             [  0.        ,   0.        ,   1.        ]])
         self.no_aruco_detected = 0
-        self.frame1 = None 
-        self.frame2 = None
-        self.smoothed_u = None 
-        self.smoothed_v = None 
-        self.alpha = 0.8
-        
-        self.publisher_flow_image = self.create_publisher(
-            Image,
-            '/flow_image',
-            10
-        )
-
-        self.publisher_residual_image = self.create_publisher(
-            Image, 
-            '/residual_flow_image', 
-            10
-        )
-        
-        self.publisher_mask_image = self.create_publisher(
-            Image, 
-            '/flow_mask_image', 
-            10
-        )
-
-        self.start_time = time.time()
-
 
 
     def stop_robot(self):
@@ -114,9 +83,10 @@ class MainNode(Node):
         return None
     
 
+    def stop_sign_cb(self,msg):
+        self.stop_sign_detected = msg.data
+        return None
    
-
-
 
     def main_cb(self,msg):
 
@@ -134,9 +104,9 @@ class MainNode(Node):
         try:
 
             cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-            #cv_frame = cv2.resize(cv_frame,None,fx=0.5,fy=0.5)
             cv_frame_gray = cv2.cvtColor(cv_frame, cv2.COLOR_BGR2GRAY)
             height, width = cv_frame.shape[:2]
+
             # Drawing the horizon line
             cv2.line(cv_frame, (0,int(self.y_0)), (width,int(self.y_w)), (0,0,255), 2)
 
@@ -147,60 +117,25 @@ class MainNode(Node):
                 image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
                 self.publisher_processed.publish(image_msg)
                 self.stop_robot()
-                cv2.putText(
-                    cv_frame, 
-                    label, 
-                    (10, 30), 
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    1.0,
-                    color,
-                    2, 
-                    cv2.LINE_AA
-                        )
+                cv2.putText(cv_frame, label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX,1.0,color,2, cv2.LINE_AA)
                 return None
             else:
                 label = "Safe"
                 color = (0, 255, 0)
-
-                cv2.putText(
-                    cv_frame, 
-                    label, 
-                    (10, 30), 
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    1.0,
-                    color,
-                    2, 
-                    cv2.LINE_AA
-                        )
+                cv2.putText(cv_frame, label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX,1.0,color,2, cv2.LINE_AA)
                
 
-
-            self.get_logger().info(f"YOLO START AT {time.time() - self.start_time}")
             #--------------------------------Stop sign logic start--------------------------------
-            #  Run inference
-            results = self.model(cv_frame)
-            labels = results.names
-            detections = results.pred[0]
-            stop_sign_detected = False
-            for *box, conf, cls in detections:
-                label = labels[int(cls)]
-                if label.lower() == "stop sign":
-                    stop_sign_detected = True
-                    x1, y1, x2, y2 = map(int, box)
-                    cv2.rectangle(cv_frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-                    cv2.putText(cv_frame, f"{label} ({conf:.2f})", (x1, y1 - 10),cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)      
-            
-            self.get_logger().info(f"YOLO END AT {time.time() - self.start_time}")
-            if stop_sign_detected:
+            if self.stop_sign_detected:
                 self.get_logger().info("Stop sign detected")
                 self.stop_robot()  # To stop the robot
+                label = "Stop sign detected"
+                cv2.putText(cv_frame, label,(30, 30),cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)    
                 image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
                 self.publisher_processed.publish(image_msg)
                 return None  # Go to next frame
             #--------------------------------Stop sign logic end--------------------------------
             
-
-
 
 
 
@@ -271,5 +206,3 @@ class MainNode(Node):
             self.get_logger().error(traceback.format_exc()) 
 
         return None
-
-

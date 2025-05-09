@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import CompressedImage
+from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2
 from std_msgs.msg import Int32
@@ -14,7 +14,6 @@ from std_msgs.msg import Float64MultiArray
 from ament_index_python.packages import get_package_share_directory
 package_share = get_package_share_directory('group_2')  
 config_path = os.path.join(package_share, 'config', 'params.yaml')
-import sys
 
 
 # Declaration of debug directly folders
@@ -37,18 +36,10 @@ RANSAC_INLIER_THRESHOLD = 30  # in pixels
 class HorizonfinderNode(Node):
     def __init__(self, node_name='horizon_finder'):
         super().__init__(node_name)
-
-        which_robot = int(sys.argv[1])
-        if which_robot == 1:
-            topic_prefix = '/tb4_1'
-        elif which_robot == 2:
-            topic_prefix = '/tb4_2'
-
         self.cv_bridge = CvBridge()
-        self.subscription = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/image_raw/compressed', self.frame_cb,10)
-        self.publish_horizon = self.create_publisher(Float64MultiArray, topic_prefix+'/horizon_line', 1)
+        self.subscription = self.create_subscription(Image,'/camera/image_raw', self.frame_cb,10)
+        self.publish_horizon = self.create_publisher(Float64MultiArray, '/horizon_line', 1)
         self.horizon_initialized = False
-        self.frame_count=0
 
         self.declare_parameter('debug', False)
         self.debug = (self.get_parameter('debug').value)
@@ -70,7 +61,7 @@ class HorizonfinderNode(Node):
         self.get_logger().info("Horizon finder Initializer initiated")
     
     
-    # @staticmethod
+    @staticmethod
     def detect_charuco(self,cv_frame, board):
         gray_image = cv2.cvtColor(cv_frame, cv2.COLOR_BGR2GRAY)
         corners, ids, _ = aruco.detectMarkers(gray_image, self.charuco_dict)
@@ -173,7 +164,7 @@ class HorizonfinderNode(Node):
     # Callback function of the '/camera/image_raw' topic
     def frame_cb(self, msg):
         # Checking if initialization already done
-        if  self.horizon_initialized:
+        if not self.horizon_initialized:
             self.get_logger().info("Already initialized. Ignoring further frames.")
             self.get_logger().info("Node will now shut down.")
             self.destroy_subscription(self.subscription) 
@@ -182,11 +173,8 @@ class HorizonfinderNode(Node):
             return
 
         try:
-            np_arr = np.frombuffer(msg.data, np.uint8)
-            cv_frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-            # cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, 'bgr8')
+            cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, 'bgr8')
             height, width = cv_frame.shape[:2]
-            self.frame_count += 1
 
             # Debug check
             if self.debug:
