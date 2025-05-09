@@ -3,3 +3,4 @@ install/
 log/
 *.mp4
 ros2_horizon_debug/
+*.vscode
