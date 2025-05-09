@@ -22,7 +22,8 @@ class MainNode(Node):
         self.subscription_horizon_line = self.create_subscription(Float64MultiArray, '/horizon_line', self.horizon_cb,1)
 
         self.publisher_processed = self.create_publisher(Image, '/final_display', 10)
-        self.model = torch.hub.load('yolov5','yolov5s', source='local')
+        # self.model = torch.hub.load('yolov5','yolov5s', source='local')
+        self.model = torch.hub.load('yolov5', 'yolov5n',source='local')
         self.model.eval()
         self.horizon_not_initialized = True
         self.x_0 = None 

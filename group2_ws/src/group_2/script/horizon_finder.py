@@ -38,10 +38,17 @@ class HorizonfinderNode(Node):
         super().__init__(node_name)
         self.cv_bridge = CvBridge()
         self.subscription = self.create_subscription(Image,'/camera/image_raw', self.frame_cb,10)
-        self.publish_horizon = self.create_publisher(Float64MultiArray, '/horizon_line', 1)
-        self.horizon_initialized = False
-        self.frame_count=0
+        self.horizon_y_publisher = self.create_publisher(Int32, '/horizon_y', 10)
+        self.frame_buffer = []
+        self.max_frames = 100
+        self.frame_count = 0
+        self.prev_horizon_x = None
+        self.prev_horizon_y = None
 
+        # paramter declaration
+        self.declare_parameter('horizon_y', 125)
+        self.declare_parameter('hough_threshold', 50)
+        self.declare_parameter('hough_angle_resolution', np.pi/180)
         self.declare_parameter('debug', False)
         self.debug = (self.get_parameter('debug').value)
 
@@ -174,7 +181,9 @@ class HorizonfinderNode(Node):
             return
 
         try:
-            cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, 'bgr8')
+            np_arr = np.frombuffer(msg.data, np.uint8)
+            cv_frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+            # cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, 'bgr8')
             height, width = cv_frame.shape[:2]
             self.frame_count += 1
 

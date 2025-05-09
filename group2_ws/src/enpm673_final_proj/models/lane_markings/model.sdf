@@ -28,7 +28,11 @@
       <include>
         <name>paper0</name>
         <uri>model://paper_letter_size</uri>
+<<<<<<< HEAD
         <pose>0.696717 0.3 0 0 0 0.0</pose>
+=======
+        <pose>0.696717 0.294755 0 0 0 0</pose>
+>>>>>>> origin/zinobile
       </include>
 
       <include>
@@ -58,19 +62,19 @@
       <include>
         <name>paper5</name>
         <uri>model://paper_letter_size</uri>
-        <pose>-0.649394 1.93556 0 0 0 -0.3</pose>
+        <pose>-0.649394 1.93556 0 0 0 3</pose>
       </include>
 
       <include>
         <name>paper6</name>
         <uri>model://paper_letter_size</uri>
-        <pose>-0.88953 1.24394 0 0 0 0</pose>
+        <pose>-0.88953 1.24394 0 0 0 3.14</pose>
       </include>
 
       <include>
         <name>paper7</name>
         <uri>model://paper_letter_size</uri>
-        <pose>-0.856204 0.476271 0 0 4e-06 0</pose>
+        <pose>-0.856204 0.476271 0 0 0 3.14</pose>
       </include>
 
 

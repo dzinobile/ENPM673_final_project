@@ -38,6 +38,12 @@ ament_python_install_package(enpm673_module)
 # Install python executable
 install(PROGRAMS
   scripts/enpm673_final_proj_main.py
+  scripts/directional_motion.py
+  scripts/directional_motion_tb1.py
+  scripts/directional_motion_tb2.py
+  scripts/save_video.py
+  scripts/directional_motion_2.py
+  scripts/directional_motion_3.py
   DESTINATION lib/${PROJECT_NAME}
   )
 
