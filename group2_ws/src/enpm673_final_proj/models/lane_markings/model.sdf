@@ -28,11 +28,7 @@
       <include>
         <name>paper0</name>
         <uri>model://paper_letter_size</uri>
-<<<<<<< HEAD
-        <pose>0.696717 0.3 0 0 0 0.0</pose>
-=======
         <pose>0.696717 0.294755 0 0 0 0</pose>
->>>>>>> origin/zinobile
       </include>
 
       <include>
