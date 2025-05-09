@@ -24,8 +24,8 @@ class YoloNode(Node):
         self.subscription_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,1)
         self.stop_sign_publisher = self.create_publisher(Bool,'/stop_sign',1)
         self.stop_detected = False
-        # self.model = torch.hub.load('yolov5', 'yolov5n',source='local')  # for yolo v5 nano
-        self.model = torch.hub.load('yolov5', 'yolov5s',source='local')  # for yolo v5s 
+        self.model = torch.hub.load('yolov5', 'yolov5n',source='local')  # for yolo v5 nano
+        # self.model = torch.hub.load('yolov5', 'yolov5s',source='local')  # for yolo v5s 
         self.model.eval()
       
 
@@ -43,10 +43,12 @@ class YoloNode(Node):
                     self.stop_detected = True     
             if self.stop_detected:
                 stop_msg = Bool()
-                self.get_logger().info("Stop sign detected")
                 stop_msg.data = True
                 self.stop_sign_publisher.publish(stop_msg)
+                self.get_logger().info("Stop sign detected")
+               
             else:
+                # self.get_logger().info("No stop sign")
                 stop_msg = Bool()
                 stop_msg.data = False
                 self.stop_sign_publisher.publish(stop_msg)

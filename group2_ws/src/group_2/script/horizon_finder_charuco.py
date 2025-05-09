@@ -38,7 +38,7 @@ class HorizonfinderNode(Node):
         super().__init__(node_name)
         self.cv_bridge = CvBridge()
         self.subscription = self.create_subscription(Image,'/camera/image_raw', self.frame_cb,10)
-        self.publish_horizon = self.create_publisher(Float64MultiArray, '/horizon_line', 1)
+        self.publish_horizon = self.create_publisher(Float64MultiArray, '/horizon_line', 10)
         self.horizon_initialized = False
 
         self.declare_parameter('debug', False)
