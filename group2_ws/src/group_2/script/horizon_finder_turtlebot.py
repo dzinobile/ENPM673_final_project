@@ -9,30 +9,31 @@ import numpy as np
 import os
 import yaml
 from collections import Counter
-from cv2 import aruco
 from std_msgs.msg import Float64MultiArray
 from ament_index_python.packages import get_package_share_directory
+import sys
 package_share = get_package_share_directory('group_2')  
 config_path = os.path.join(package_share, 'config', 'params.yaml')
-import sys
 
 
 # Declaration of debug directly folders
-DEBUG_DIRS       = {
-    'original'    : '01_original',
-    'detect_charuco': '02_detect_charuco',
-    'corners'     : '03_corners',
-    'lines'       : '04_lines',
-    'horizon'     : '05_horizon'
+DEBUG_DIRS = {
+    'original':      '00_original',
+    'markers':       '01_markers',
+    'corners':       '02_corners',    
+    'intersections': '03_intersections',
+    'horizon':       '04_horizon',
+    'good_horizon' : '05_good_horizon'
 }
 # Global variables
 MAIN_DEBUG_DIR = "ros2_horizon_debug"
-BOARD_SIZE       = (5, 7)     
-SQUARE_LENGTH    = 0.029
-MARKER_LENGTH    = 0.019
-DICTIONARY       = aruco.DICT_4X4_50
-RANSAC_ITERARATIONS   = 1000
-RANSAC_INLIER_THRESHOLD = 30  # in pixels
+###################### Aruco stuff ##################################
+# ------------------------------------------------------------------
+aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+parameters = cv2.aruco.DetectorParameters()
+# ------------------------------------------------------------------
+
+
 
 class HorizonfinderNode(Node):
     def __init__(self, node_name='horizon_finder'):
@@ -46,135 +47,91 @@ class HorizonfinderNode(Node):
 
         self.cv_bridge = CvBridge()
         self.subscription = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/image_raw/compressed', self.frame_cb,10)
-        self.publish_horizon = self.create_publisher(Float64MultiArray, topic_prefix+'/horizon_line', 1)
+        self.publish_horizon = self.create_publisher(Float64MultiArray, topic_prefix+'/horizon_line', 10)
+        self.publish_good_horizon = self.create_publisher(Float64MultiArray, topic_prefix+'/good_horizon_line', 10)
+        self.one_vp_not_published = True
+        self.frame_count = 0
         self.horizon_initialized = False
-        self.frame_count=0
+        
 
+
+        # parameter declaration
         self.declare_parameter('debug', False)
-        self.debug = (self.get_parameter('debug').value)
 
-        # Initialize Charuco Board
-        self.charuco_dict  = aruco.getPredefinedDictionary(DICTIONARY)
-        self.charuco_board = aruco.CharucoBoard(
-            (BOARD_SIZE[0], BOARD_SIZE[1]),
-            SQUARE_LENGTH, MARKER_LENGTH,
-            self.charuco_dict
-        )
+        
+        # accessing the parameters
+        self.debug = (self.get_parameter('debug').value)
 
 
         if self.debug:
             # Creating debug output directories
             for dir_name in DEBUG_DIRS.values():
                 os.makedirs(os.path.join(MAIN_DEBUG_DIR, dir_name), exist_ok=True)
-
-        self.get_logger().info("Horizon finder Initializer initiated")
+        self.get_logger().info("Horizon Initializer initiated")
     
     
-    # @staticmethod
-    def detect_charuco(self,cv_frame, board):
-        gray_image = cv2.cvtColor(cv_frame, cv2.COLOR_BGR2GRAY)
-        corners, ids, _ = aruco.detectMarkers(gray_image, self.charuco_dict)
-        charuco_frame = cv_frame.copy()
-
-        if ids is not None and len(ids) > 0:
-            retval, corners, ids = aruco.interpolateCornersCharuco(corners, ids, gray_image, board)
-            if retval > 0:
-                criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_MAX_ITER,100, 1e-4)
-                corners = cv2.cornerSubPix(gray_image, corners, (5,5), (-1,-1), criteria)
-                charuco_frame = aruco.drawDetectedCornersCharuco(charuco_frame, corners, ids)
-                return True, corners, ids, charuco_frame
-        return False, None, None, charuco_frame
-    
+    # Method to remove near horizontal and near vertical lines.
     @staticmethod
-    def get_charuco_lines_fixed5X7(self,corners, ids):
-        points      = corners.reshape(-1,2)
-        ids_flat = ids.flatten().astype(int)
-
-        # set-1: vertical (4 columns)
-        column_id_sets = [
-            [ 0, 4, 8,12,16,20],
-            [ 1, 5, 9,13,17,21],
-            [ 2, 6,10,14,18,22],
-            [ 3, 7,11,15,19,23]
-        ]
-        # set-2: horizontal (6 rows)
-        horiz_id_sets = [
-            [ 0, 1, 2, 3],
-            [ 4, 5, 6, 7],
-            [ 8, 9,10,11],
-            [12,13,14,15],
-            [16,17,18,19],
-            [20,21,22,23]
-        ]
-
-        row_lines = []
-        for row_idx, id_list in enumerate(horiz_id_sets):
-            mask = np.isin(ids_flat, id_list)
-            row_pts = points[mask]
-            if len(row_pts) < 2:
-                print(f"skip horizontal row {row_idx}: only {len(row_pts)} pts")
-                self.get_logger().info(f"skip horizontal row {row_idx}: only {len(row_pts)} pts")
-                continue
-
-            vx, vy, x0, y0 = cv2.fitLine(row_pts.astype(np.float32),cv2.DIST_L2, 0, 0.01, 0.01).flatten()
-            row_lines.append((vx,vy,x0,y0))
-
-        column_lines = []
-        for col_idx, id_list in enumerate(column_id_sets):
-            mask = np.isin(ids_flat, id_list)
-            col_pts = points[mask]
-            if len(col_pts) < 2:
-                self.get_logger().info(f"skip vertical col {col_idx}: only {len(col_pts)} pts")
-                continue
-            vx, vy, x0, y0 = cv2.fitLine(col_pts.astype(np.float32),cv2.DIST_L2, 0, 0.01, 0.01).flatten()
-            column_lines.append((vx,vy,x0,y0))
-
-        return row_lines, column_lines
+    def line_from_points(point_1, point_2):
+        a = point_2[1] - point_1[1]   
+        b = point_1[0] - point_2[0]   
+        c = -(a * point_1[0] + b * point_1[1]) #ax + by + c = 0
+        return a, b, c
+      
+    @staticmethod
+    def intersection_finder(line_1, line_2):
+        # Solving the linear systems
+        # ax1 + by1 + c1 = 0
+        # ax2 + by2 + c2 = 0
+        A = np.array([[line_1[0], line_1[1]], [line_2[0], line_2[1]]])  
+        B = np.array([-line_1[2], -line_2[2]])
+        try:
+            intersection = np.linalg.solve(A, B)
+            return intersection
+        except np.linalg.LinAlgError:
+            return None  # Paralell lines
 
     @staticmethod
-    def set_intersections(lines):
-        points = []
-        n = len(lines)
-        for i in range(n):
-            vx1,vy1,x1,y1 = lines[i]
-            for j in range(i+1, n):
-                vx2,vy2,x2,y2 = lines[j]
-                det = vx1*vy2 - vy1*vx2
-                if abs(det) < 1e-6:
-                    continue
-                A = np.array([[vx1,-vx2],[vy1,-vy2]])
-                b = np.array([x2-x1, y2-y1])
-                t,_ = np.linalg.solve(A, b)
-                x,y = x1 + t*vx1, y1 + t*vy1
-                if np.isfinite(x) and np.isfinite(y):
-                    points.append([x,y])
-        return np.array(points) if points else None
+    def horizon_line_drawer(image, vanishing_points):
+        h, w = image.shape[:2]
+        for (x_value, y_value) in vanishing_points:
+            x_point = int(round(x_value))
+            y_point = int(round(y_value))
+            cv2.circle(image, (x_point, y_point), 5, (0, 0, 255), -1)
+            
+        if len(vanishing_points) ==  1:
+            y_0 = int(round(vanishing_points[0][1]))
+            y_0 = np.clip(y_0, 0, h - 1)
+            cv2.line(image,(0,   y_0),(w-1, y_0),color=(255, 255, 0),thickness=2)
+            return image
+        
+        # Converting  to numpy array
+        vanishing_points_array = np.array(vanishing_points)
 
-    @staticmethod
-    def estimate_vanishing_points(intersections):
-        if intersections is None or len(intersections) < 2:
-            return None
-        best_vp, best_in = None, 0
-        for _ in range(RANSAC_ITERARATIONS):
-            i,j = np.random.choice(len(intersections), 2, replace=False)
-            samp = intersections[[i,j]].astype(np.float32)
-            vx,vy,x0,y0 = cv2.fitLine(samp, cv2.DIST_L2, 0, 0.01, 0.01).flatten()
-            # distance from all pts to this line
-            d = np.abs((intersections[:,0]-x0)*vy - (intersections[:,1]-y0)*vx)
-            inliers = d < RANSAC_INLIER_THRESHOLD
-            cnt = inliers.sum()
-            if cnt > best_in:
-                best_in = cnt
-                best_vp = intersections[inliers].mean(axis=0)
-        return tuple(best_vp.astype(int)) if best_vp is not None else None
+        # Fitting  y = mx + c using least squares
+        x = vanishing_points_array[:, 0]
+        y = vanishing_points_array[:, 1]
+        A = np.vstack([x, np.ones_like(x)]).T
+        m, c = np.linalg.lstsq(A, y, rcond=None)[0]
+        h, w = image.shape[:2]
 
+        # Computing y at left and right edges of the image
+        y1 = int(round(m * 0 + c))
+        y2 = int(round(m * (w - 1) + c))
 
+        # Clipping y values to image edges
+        y1 = max(0, min(h - 1, y1))
+        y2 = max(0, min(h - 1, y2))
+        cv2.line(image, (0, y1), (w - 1, y2), (255, 255, 0), 2)
+
+            
+        return image
 
     # Callback function of the '/camera/image_raw' topic
     def frame_cb(self, msg):
         # Checking if initialization already done
-        if  self.horizon_initialized:
-            self.get_logger().info("Already initialized. Ignoring further frames.")
+        if self.horizon_initialized : 
+            self.get_logger().info("Already initialized the horizon.")
             self.get_logger().info("Node will now shut down.")
             self.destroy_subscription(self.subscription) 
             self.destroy_node()
@@ -185,77 +142,94 @@ class HorizonfinderNode(Node):
             np_arr = np.frombuffer(msg.data, np.uint8)
             cv_frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
             # cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, 'bgr8')
-            height, width = cv_frame.shape[:2]
-            self.frame_count += 1
+            
+            gray = cv2.cvtColor(cv_frame, cv2.COLOR_BGR2GRAY)
+            aruco_corners, ids, _ = cv2.aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
 
             # Debug check
             if self.debug:
-                cv2.imwrite(os.path.join(MAIN_DEBUG_DIR, DEBUG_DIRS['original'], f"frame_{self.frame_count:04d}.jpg"), cv_frame)
+                cv2.imwrite(os.path.join(MAIN_DEBUG_DIR, DEBUG_DIRS['original'],f"frame_{self.frame_count:04d}.jpg"),cv_frame)
 
-            # Detect Charuco    
-            found, corners, ids, detected_image = self.detect_charuco(cv_frame, self.charuco_board)
-            if self.debug:
-                cv2.imwrite(os.path.join(MAIN_DEBUG_DIR, DEBUG_DIRS['detect_charuco'], f"frame_{self.frame_count:04d}.jpg"), detected_image)
-            if not found:
-                self.get_logger().info("No Charuco detected")
-                return
-            
-            
-            # Detect Corners
-            corner_image = aruco.drawDetectedCornersCharuco(cv_frame.copy(), corners, ids)
-            if self.debug:
-                cv2.imwrite(os.path.join(MAIN_DEBUG_DIR, DEBUG_DIRS['corners'], f"frame_{self.frame_count:04d}.jpg"),  corner_image)
-
-
-            # Detecting lines using fixed-ID sets
-            row_lines, column_lines = self.get_charuco_lines_fixed5X7(corners, ids)
-            line_image = cv_frame.copy()
-            for vx,vy,x0,y0 in row_lines + column_lines:
-                p1 = (int(x0 - 1000*vx), int(y0 - 1000*vy))
-                p2 = (int(x0 + 1000*vx), int(y0 + 1000*vy))
-                cv2.line(line_image, p1, p2, (0,255,0), 2)
-            if self.debug:
-                cv2.imwrite(os.path.join(MAIN_DEBUG_DIR, DEBUG_DIRS['lines'], f"frame_{self.frame_count:04d}.jpg"),  line_image)
-
-            # Vanishing points along each board direction
-            row_intersections  = self.set_intersections(row_lines)    # intersections among row-lines
-            column_intersections  = self.set_intersections(column_lines)     # intersections among col-lines
-            vp_row = self.estimate_vanishing_points(row_intersections)
-            vp_col = self.estimate_vanishing_points(column_intersections)
-
-            # Horizon connecting the two VPs
-            final = cv_frame.copy()
-        
-            # draw VPs
-            if vp_row: cv2.circle(final, vp_row, 8, (0,255,255), -1)
-            if vp_col: cv2.circle(final, vp_col, 8, (255,0,255), -1)
-
-            # if both VPs found, compute horizon endpoints at x=0 and x=w
-            if vp_row and vp_col:
-                (x1,y1),(x2,y2) = vp_row, vp_col
-                # slope m and intercept b
-                m = (y2 - y1) / float(x2 - x1)
-                b = y1 - m*x1
-                # at x=0 and x=w
-                y_0 = int(b)
-                y_w = int(m*width + b)
-                cv2.line(final, (0,y_0), (width,y_w), (0,0,255), 2)
-                self.get_logger().info()
-                
+            # Save only if marker is detected
+            if aruco_corners:
+                marker_frame = cv_frame.copy()
+                cv2.aruco.drawDetectedMarkers(marker_frame, aruco_corners, ids)
                 if self.debug:
-                    cv2.imwrite(os.path.join(MAIN_DEBUG_DIR, DEBUG_DIRS['horizon'],f"frame_{self.frame_count:04d}.jpg"), final)
-                array = Float64MultiArray()
-                array.data = [0, y_0, width, y_w]
-                self.publish_horizon.publish(array)
-                self.get_logger().info("Published horizon line details")
-                self.horizon_initialized = True
-                self.destroy_subscription(self.subscription) 
-                self.destroy_node()
-                rclpy.shutdown()
+                    cv2.imwrite(os.path.join(MAIN_DEBUG_DIR, DEBUG_DIRS['markers'],f"frame_{self.frame_count:04d}.jpg"),marker_frame)
+                    
+                vanishing_points = []
 
-            if self.debug:
-                cv2.imwrite(os.path.join(MAIN_DEBUG_DIR, DEBUG_DIRS['horizon'],f"frame_{self.frame_count:04d}.jpg"), final)
-                
+                for corners, marker_id in zip(aruco_corners, ids):
+                    corners = corners.reshape(4, 2).astype(int)
+
+                    if self.debug:
+                        corner_frame = cv_frame.copy()
+                        for i, pt in enumerate(corners):
+                            cv2.circle(corner_frame, tuple(pt), 5, (0, 0, 255), -1)
+                            cv2.putText(corner_frame, f"{i}", tuple(pt + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
+                            cv2.imwrite(os.path.join(MAIN_DEBUG_DIR, DEBUG_DIRS['corners'],f"frame_{self.frame_count:04d}.jpg"), corner_frame)
+                            
+
+                    # # Use corner indices 0–1 and 2–3 as edges
+                    top_point_1, top_point_2 = corners[0], corners[1]
+                    bottom_point_1, bottom_point_2 = corners[2], corners[3]
+                    # top_point_1, top_point_2 = corners[0], corners[3]
+                    # bottom_point_1, bottom_point_2 = corners[1], corners[2]
+
+
+                    Line_1 = self.line_from_points(top_point_1, top_point_2)
+                    Line_2 = self.line_from_points(bottom_point_1, bottom_point_2)
+
+        
+                    intersection = self.intersection_finder(Line_1, Line_2)
+                    if intersection is not None:
+                        vanishing_points.append(intersection)
+                        
+                        if self.debug:
+                            intersections_frame = cv_frame.copy()
+                            cv2.circle(intersections_frame, tuple(intersection.astype(int)), 6, (0, 255, 0), -1)
+                            cv2.imwrite(os.path.join(MAIN_DEBUG_DIR, DEBUG_DIRS['intersections'],f"frame_{self.frame_count:04d}.jpg"), intersections_frame)
+                            
+                if len(vanishing_points) >= 2:
+                    if self.debug:
+                        horizon_frame = intersections_frame.copy()
+                        horizon_frame =self.horizon_line_drawer(horizon_frame, vanishing_points)
+                        cv2.imwrite(os.path.join(MAIN_DEBUG_DIR, DEBUG_DIRS['horizon'],f"frame_{self.frame_count:04d}.jpg"), horizon_frame)
+
+                    # Checking for good horizon using slope value
+                    vanishing_points_array = np.array(vanishing_points)
+                    x = vanishing_points_array[:, 0]
+                    y = vanishing_points_array[:, 1]
+                    A = np.vstack([x, np.ones_like(x)]).T
+                    m, c = np.linalg.lstsq(A, y, rcond=None)[0]
+
+                    if abs(m) < 0.05: 
+                        self.get_logger().info(f"Frame {self.frame_count}: Good horizon detected.")  
+                        flat = [float(v) for pt in vanishing_points for v in pt]
+                        msg  = Float64MultiArray(data=flat)
+                        self.publish_horizon.publish(msg)
+                        self.publish_good_horizon.publish(msg)
+                        self.get_logger().info("Published good horizon line details")
+                        if self.debug:
+                            cv2.imwrite(os.path.join(MAIN_DEBUG_DIR, DEBUG_DIRS['good_horizon'], f"frame_{self.frame_count:04d}.jpg"), horizon_frame)
+                        flat = [float(v) for pt in vanishing_points for v in pt]
+                        msg  = Float64MultiArray(data=flat)
+                        self.publish_horizon.publish(msg)
+                        self.publish_good_horizon.publish(msg)
+                        self.get_logger().info("Published good horizon line details")
+                        self.get_logger().info("Horizon Initialization complete")
+                        self.get_logger().info("Node will now shut down.")
+                        self.horizon_initialized = True
+                        self.destroy_subscription(self.subscription) 
+                        self.destroy_node()
+                        rclpy.shutdown()
+                        
+                if self.one_vp_not_published and len(vanishing_points) ==1 :
+                    flat = [float(v) for pt in vanishing_points for v in pt]
+                    msg  = Float64MultiArray(data=flat)
+                    self.publish_horizon.publish(msg)
+                    self.one_vp_not_published = False
+            self.frame_count += 1
 
         except Exception as e:
             self.get_logger().error(f'Error noticed: {str(e)}')

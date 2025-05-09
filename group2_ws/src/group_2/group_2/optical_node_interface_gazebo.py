@@ -11,6 +11,7 @@ from geometry_msgs.msg import Twist
 import sys
 import numpy as np
 from std_msgs.msg import Float64MultiArray
+from rclpy.callback_groups import ReentrantCallbackGroup
 from std_msgs.msg import Bool
 import time 
 
@@ -19,54 +20,44 @@ class OpticalNode(Node):
     
         super().__init__(node_name)
 
-
+        self.multi_thread_group = ReentrantCallbackGroup()
         self.cv_bridge = CvBridge()
-        self.subscription_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,10)
-        self.subscription_horizon_line = self.create_subscription(Float64MultiArray, '/horizon_line', self.horizon_cb,1)
+        self.subscription_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,10,callback_group=self.multi_thread_group)
+        self.subscription_horizon_line = self.create_subscription(Float64MultiArray, '/good_horizon_line', self.horizon_cb,1,callback_group=self.multi_thread_group)
         self.stop_publisher = self.create_publisher(Bool,'/stop_robot',1)
         self.horizon_not_initialized = True
-        self.x_0 = None 
-        self.y_0 = None
-        self.x_w = None
-        self.y_w = None
+        self.avg_horizon_value = None
+        self.vanishing_points = None
         self.object_detected = False
         self.frame1 = None 
         self.frame2 = None
         self.smoothed_u = None 
         self.smoothed_v = None 
         self.alpha = 0.8
-        self.start_time = time.time()
         
-        self.publisher_flow_image = self.create_publisher(
-            Image,
-            '/flow_image',
-            10
-        )
+        self.publisher_flow_image = self.create_publisher(Image,'/flow_image',10)
 
-        self.publisher_residual_image = self.create_publisher(
-            Image, 
-            '/residual_flow_image', 
-            10
-        )
+        self.publisher_residual_image = self.create_publisher(Image, '/residual_flow_image', 10)
         
-        self.publisher_mask_image = self.create_publisher(
-            Image, 
-            '/flow_mask_image', 
-            10
-        )
+        self.publisher_mask_image = self.create_publisher(Image, '/flow_mask_image',10)
 
 
 
     def horizon_cb(self,msg):
         self.horizon_not_initialized = False
-        self.x_0, self.y_0, self.x_w, self.y_w = msg.data
+        data = msg.data
+        length    = len(data)//2
+        vp = [ (data[2*i], data[2*i+1]) for i in range(length)]
+        self.vanishing_points  = [ (data[2*i], data[2*i+1]) for i in range(length)]
+        y_values = [y for (_, y) in self.vanishing_points]
+        self.avg_horizon_value = sum(y_values) / len(y_values)
         self.get_logger().info(f"Received Horizon value")
         return None
     
 
     def of_crop(self, gray, wpl=0.15, wph=0.85, hpl=.5, hph=1):
         H, W = gray.shape
-        return gray[int((self.y_0+self.y_w)/2):int(hph*H), int(wpl*W):int(wph*W)]
+        return gray[int(self.avg_horizon_value):int(hph*H), int(wpl*W):int(wph*W)]
     
     def of_convert_gray(self, bgr):
         return cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
@@ -142,8 +133,6 @@ class OpticalNode(Node):
 
 
     def main_cb(self, msg):
-        self.get_logger().info(f"Time since initialization (optical) {time.time() - self.start_time}")
-
         if self.horizon_not_initialized:
             self.get_logger().info("Waiting for horizon finder to find horizon")
             return None
@@ -158,10 +147,6 @@ class OpticalNode(Node):
                 return None
             self.frame2 = self.of_standardize(cv_frame)
 
-
-            # Drawing the horizon line
-            cv2.line(cv_frame, (0,int(self.y_0)), (width,int(self.y_w)), (0,0,255), 2)
-
             #-----------------------------Optical Flow logic start---------------------------------
             # Optical Flow code
 
@@ -170,7 +155,7 @@ class OpticalNode(Node):
 
             x1 = int(wpl * width)
             x2 = int(wph * width)
-            y1 = int((self.y_0+self.y_w)/2)
+            y1 = int(self.avg_horizon_value)
             y2 = int(hph * height)
 
 
