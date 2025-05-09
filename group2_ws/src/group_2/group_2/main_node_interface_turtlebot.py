@@ -12,11 +12,15 @@ import sys
 import numpy as np
 from std_msgs.msg import Float64MultiArray
 from std_msgs.msg import Bool
-
+from rclpy.callback_groups import ReentrantCallbackGroup
+import time 
 class MainNode(Node):
     def __init__(self, node_name='main_node'):
     
         super().__init__(node_name)
+
+        self.multi_thread_group = ReentrantCallbackGroup()
+
 
         which_robot = int(sys.argv[1])
         if which_robot == 1:
@@ -29,43 +33,22 @@ class MainNode(Node):
         self.publisher_cmd_vel= self.create_publisher(TwistStamped,topic_prefix+'/cmd_vel', 10)
         self.subscription_horizon_line = self.create_subscription(Float64MultiArray, topic_prefix+'/horizon_line', self.horizon_cb,1)
         self.publisher_processed = self.create_publisher(CompressedImage,topic_prefix+'/final_display', 1)
-        self.model = torch.hub.load('yolov5','yolov5s', source='local')
         self.subscription_optical=self.create_subscription(Bool,topic_prefix+'/stop_robot',self.of_cb,10)
-        self.model.eval()
+        self.subscription_stop=self.create_subscription(Bool,topic_prefix+'/stop_sign',self.stop_sign_cb,1,callback_group=self.multi_thread_group)
+
         self.horizon_not_initialized = True
+
         self.x_0 = None 
         self.y_0 = None
         self.x_w = None
         self.y_w = None
         self.object_detected = False
+        self.stop_sign_detected = False
         self.camera_matrix = np.matrix([
             [610.78565932,   0.        , 154.50548085],
             [  0.        , 594.07200631, 127.60019182],
             [  0.        ,   0.        ,   1.        ]])
         self.no_aruco_detected = 0
-        self.frame1 = None 
-        self.frame2 = None
-        self.smoothed_u = None 
-        self.smoothed_v = None 
-        self.alpha = 0.8
-        
-        self.publisher_flow_image = self.create_publisher(
-            CompressedImage,
-            topic_prefix+'/flow_image',
-            10
-        )
-
-        self.publisher_residual_image = self.create_publisher(
-            CompressedImage, 
-            topic_prefix+'/residual_flow_image', 
-            10
-        )
-        
-        self.publisher_mask_image = self.create_publisher(
-            CompressedImage, 
-            topic_prefix+'/flow_mask_image', 
-            10
-        )
 
 
 
@@ -109,6 +92,9 @@ class MainNode(Node):
         return None
     
 
+    def stop_sign_cb(self,msg):
+        self.stop_sign_detected = msg.data
+        return None
 
 
     def main_cb(self,msg):
@@ -172,23 +158,12 @@ class MainNode(Node):
 
 
             #--------------------------------Stop sign logic start--------------------------------
-            #  Run inference
-            results = self.model(cv_frame)
-            labels = results.names
-            detections = results.pred[0]
-            stop_sign_detected = False
-            for *box, conf, cls in detections:
-                label = labels[int(cls)]
-                if label.lower() == "stop sign":
-                    stop_sign_detected = True
-                    x1, y1, x2, y2 = map(int, box)
-                    cv2.rectangle(cv_frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-                    cv2.putText(cv_frame, f"{label} ({conf:.2f})", (x1, y1 - 10),cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)      
-            
-            if stop_sign_detected:
+           
+            if self.stop_sign_detected:
                 self.get_logger().info("Stop sign detected")
                 self.stop_robot()  # To stop the robot
-                #image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+                label = "Stop sign detected"
+                cv2.putText(cv_frame, label,(30, 30),cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)    
                 image_msg = CompressedImage()
                 image_msg.header.stamp = self.get_clock().now().to_msg()
                 image_msg.format = 'jpeg'
@@ -229,14 +204,23 @@ class MainNode(Node):
 
                     #cv2.drawFrameAxes(cv_frame,self.camera_matrix,dist_coeffs,rvec,tvec,0.05)
                     rotation_matrix,_ = cv2.Rodrigues(closest_rvec)
-                    marker_x_axis = rotation_matrix[:,0]
-                    x_axis_proj = np.array([marker_x_axis[0], 0, marker_x_axis[2]])
-                    x_axis_proj /= np.linalg.norm(x_axis_proj)
-                    yaw = np.arctan2(x_axis_proj[0], x_axis_proj[2])
+                    if sys.argv[2] == "x":
+                        marker_x_axis = rotation_matrix[:,0]
+                        x_axis_proj = np.array([marker_x_axis[0], 0, marker_x_axis[2]])
+                        x_axis_proj /= np.linalg.norm(x_axis_proj)
+                        yaw = np.arctan2(x_axis_proj[0], x_axis_proj[2])
 
-                    # Define two 3D points: one at the origin of the marker, another along the x-axis direction
-                    arrow_start_3d = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Marker origin
-                    arrow_end_3d = np.array([[0.1, 0.0, 0.0]], dtype=np.float32)    # 10 cm along x-axis
+                        # Define two 3D points: one at the origin of the marker, another along the x-axis direction
+                        arrow_start_3d = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Marker origin
+                        arrow_end_3d = np.array([[0.1, 0.0, 0.0]], dtype=np.float32)    # 10 cm along x-axis
+
+                    elif sys.argv[2] == "y":
+                        marker_y_axis = rotation_matrix[:,1]
+                        y_axis_proj = np.array([marker_y_axis[0], 0, marker_y_axis[2]])
+                        y_axis_proj /= np.linalg.norm(y_axis_proj)
+                        yaw = np.arctan2(y_axis_proj[0], y_axis_proj[2])
+                        arrow_start_3d = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Marker origin
+                        arrow_end_3d = np.array([[0.0, 0.1, 0.0]], dtype=np.float32)    # 10 cm along x-axis
 
                     # Project to 2D image plane
                     start_2d, _ = cv2.projectPoints(arrow_start_3d, closest_rvec, closest_tvec, self.camera_matrix, dist_coeffs)

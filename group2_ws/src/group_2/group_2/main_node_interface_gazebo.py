@@ -29,7 +29,6 @@ class MainNode(Node):
         self.subscription_optical=self.create_subscription(Bool,'/stop_robot',self.of_cb,1,callback_group=self.multi_thread_group)
         self.subscription_stop=self.create_subscription(Bool,'/stop_sign',self.stop_sign_cb,1,callback_group=self.multi_thread_group)
         self.horizon_not_initialized = True
-        self.start_time = time.time()
         self.x_0 = None 
         self.y_0 = None
         self.x_w = None
@@ -90,7 +89,6 @@ class MainNode(Node):
 
     def main_cb(self,msg):
 
-        self.get_logger().info(f"Time since init (main node) {time.time() - self.start_time}")
 
         aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
         parameters = cv2.aruco.DetectorParameters()
@@ -114,10 +112,11 @@ class MainNode(Node):
                 self.get_logger().info("Unsafe motion detected... stopping robot")
                 label = "Unsafe"
                 color = (0, 0, 255)
+                cv2.putText(cv_frame, label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX,1.0,color,2, cv2.LINE_AA)
+
                 image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
                 self.publisher_processed.publish(image_msg)
                 self.stop_robot()
-                cv2.putText(cv_frame, label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX,1.0,color,2, cv2.LINE_AA)
                 return None
             else:
                 label = "Safe"
@@ -165,14 +164,24 @@ class MainNode(Node):
 
                     #cv2.drawFrameAxes(cv_frame,self.camera_matrix,dist_coeffs,rvec,tvec,0.05)
                     rotation_matrix,_ = cv2.Rodrigues(closest_rvec)
-                    marker_x_axis = rotation_matrix[:,0]
-                    x_axis_proj = np.array([marker_x_axis[0], 0, marker_x_axis[2]])
-                    x_axis_proj /= np.linalg.norm(x_axis_proj)
-                    yaw = np.arctan2(x_axis_proj[0], x_axis_proj[2])
+                    if sys.argv[1] == "x":
 
-                    # Define two 3D points: one at the origin of the marker, another along the x-axis direction
-                    arrow_start_3d = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Marker origin
-                    arrow_end_3d = np.array([[0.1, 0.0, 0.0]], dtype=np.float32)    # 10 cm along x-axis
+                        marker_x_axis = rotation_matrix[:,0]
+                        x_axis_proj = np.array([marker_x_axis[0], 0, marker_x_axis[2]])
+                        x_axis_proj /= np.linalg.norm(x_axis_proj)
+                        yaw = np.arctan2(x_axis_proj[0], x_axis_proj[2])
+
+                        # Define two 3D points: one at the origin of the marker, another along the x-axis direction
+                        arrow_start_3d = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Marker origin
+                        arrow_end_3d = np.array([[0.1, 0.0, 0.0]], dtype=np.float32)    # 10 cm along x-axis
+                    
+                    elif sys.argv[1] == "y":
+                        marker_y_axis = rotation_matrix[:,1]
+                        y_axis_proj = np.array([marker_y_axis[0], 0, marker_y_axis[2]])
+                        y_axis_proj /= np.linalg.norm(y_axis_proj)
+                        yaw = np.arctan2(y_axis_proj[0], y_axis_proj[2])
+                        arrow_start_3d = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Marker origin
+                        arrow_end_3d = np.array([[0.0, 0.1, 0.0]], dtype=np.float32)    # 10 cm along x-axis
 
                     # Project to 2D image plane
                     start_2d, _ = cv2.projectPoints(arrow_start_3d, closest_rvec, closest_tvec, self.camera_matrix, dist_coeffs)
