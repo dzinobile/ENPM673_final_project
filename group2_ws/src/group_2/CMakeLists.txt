@@ -28,11 +28,6 @@ install(PROGRAMS script/horizon_finder_gazebo.py
   script/optical_node_turtlebot.py
   script/horizon_finder_gazebo.py
   script/horizon_finder_turtlebot.py
-<<<<<<< HEAD
-  script/horizon_finder.py
-  script/main_node_turtlebot.py
-=======
->>>>>>> origin/zinobile
   script/yolo_node_gazebo.py
   script/yolo_node_turtlebot.py
   DESTINATION lib/${PROJECT_NAME}

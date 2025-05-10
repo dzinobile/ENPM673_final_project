@@ -23,9 +23,9 @@ class OpticalNode(Node):
         self.multi_thread_group = ReentrantCallbackGroup()
         self.cv_bridge = CvBridge()
         self.subscription_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,10,callback_group=self.multi_thread_group)
-        self.subscription_horizon_line = self.create_subscription(Float64MultiArray, '/good_horizon_line', self.horizon_cb,1,callback_group=self.multi_thread_group)
+        self.subscription_horizon_line = self.create_subscription(Float64MultiArray, '/horizon_line', self.horizon_cb,1,callback_group=self.multi_thread_group)
         self.stop_publisher = self.create_publisher(Bool,'/stop_robot',1)
-        self.horizon_not_initialized = True
+        self.horizon_initialized = False
         self.avg_horizon_value = None
         self.vanishing_points = None
         self.object_detected = False
@@ -44,7 +44,9 @@ class OpticalNode(Node):
 
 
     def horizon_cb(self,msg):
-        self.horizon_not_initialized = False
+        if self.horizon_initialized:
+            self.destroy_subscription(self.subscription_horizon_line) 
+            return None
         data = msg.data
         length    = len(data)//2
         vp = [ (data[2*i], data[2*i+1]) for i in range(length)]
@@ -133,7 +135,7 @@ class OpticalNode(Node):
 
 
     def main_cb(self, msg):
-        if self.horizon_not_initialized:
+        if not self.horizon_initialized:
             self.get_logger().info("Waiting for horizon finder to find horizon")
             return None
         try:

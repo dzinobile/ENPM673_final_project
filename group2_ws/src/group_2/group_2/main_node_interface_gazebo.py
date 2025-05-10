@@ -141,28 +141,7 @@ class MainNode(Node):
 
         if self.horizon_not_initialized:
             self.get_logger().info("Waiting for horizon finder to find horizon")
-<<<<<<< HEAD
-            # if self.stop_sign_detected:
-            #     try :
-            #         cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-            #         self.get_logger().info("Stop sign detected")
-            #         self.stop_robot()  # To stop the robot
-            #         label = "Stop sign detected"
-            #         cv2.putText(cv_frame, label,(30, 30),cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)    
-            #         image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
-            #         self.publisher_processed.publish(image_msg)
-            #         return None
-            #     except Exception as e:
-            #         self.get_logger().error(f"Error in processing frame: {str(e)}")
-            
-            # elif not self.stop_sign_detected :
-            #     cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-            #     image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
-            #     self.publisher_processed.publish(image_msg)
-                    
-=======
       
->>>>>>> origin/zinobile
             if self.frame_count % 50 ==0:
                 msg = Twist()
                 msg.linear.x = 0.001
@@ -192,12 +171,6 @@ class MainNode(Node):
                 image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
                 self.publisher_processed.publish(image_msg)
                 self.stop_robot()
-<<<<<<< HEAD
-                cv2.putText(cv_frame, label, (30, 100), cv2.FONT_HERSHEY_SIMPLEX,1.0,color,2, cv2.LINE_AA)
-                image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
-                self.publisher_processed.publish(image_msg)
-=======
->>>>>>> origin/zinobile
                 return None
             else:
                 label = "Safe to Move - No object"

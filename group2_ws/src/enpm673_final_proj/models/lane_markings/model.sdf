@@ -8,25 +8,11 @@
         <uri>model://checkerboard_6_8_0_03</uri>
         <pose>0.8 -0.06 0 0 0 0.760685</pose>
       </include>
-<<<<<<< HEAD
-
-      <!-- <include> -->
-      <!--   <name>diamond</name> -->
-      <!--   <uri>model://paper_letter_size</uri> -->
-      <!--   <pose>0.696717 0.294755 0 0 0 0.760685</pose> -->
-      <!-- </include> -->
-
-=======
       
->>>>>>> origin/zinobile
       <include>
         <name>diamond</name>
         <uri>model://paper_letter_size</uri>
-<<<<<<< HEAD
-        <pose>0.696717 0.3 0 0 0 0.0</pose>
-=======
         <pose>0.696717 0.294755 0 0 0 0</pose>
->>>>>>> origin/zinobile
       </include>
 
       <include>
