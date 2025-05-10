@@ -28,7 +28,6 @@ DEBUG_DIRS = {
 MAIN_DEBUG_DIR = "ros2_horizon_debug"
 ###################### Aruco stuff ##################################
 # ------------------------------------------------------------------
-# aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_5X5_50)
 aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 parameters = cv2.aruco.DetectorParameters()
 # ------------------------------------------------------------------

@@ -2,12 +2,12 @@
 from rclpy.node import Node
 from std_msgs.msg import Float32, Int32
 import random
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage
 from cv_bridge import CvBridge
 import cv2
 import torch
 import traceback
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped
 import sys
 import numpy as np
 from std_msgs.msg import Float64MultiArray
@@ -19,20 +19,25 @@ class YoloNode(Node):
     
         super().__init__(node_name)
 
+        which_robot = int(sys.argv[1])
+        if which_robot == 1:
+            topic_prefix = '/tb4_1'
+        elif which_robot == 2:
+            topic_prefix = '/tb4_2'
 
         self.cv_bridge = CvBridge()
-        self.subscription_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,1)
-        self.stop_sign_publisher = self.create_publisher(Bool,'/stop_sign',1)
+        self.subscription_image = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed', self.main_cb,1)
+        self.stop_sign_publisher = self.create_publisher(Bool,topic_prefix+'/stop_sign',1)
         self.stop_detected = False
         self.model = torch.hub.load('yolov5', 'yolov5n',source='local')  # for yolo v5 nano
-        # self.model = torch.hub.load('yolov5', 'yolov5s',source='local')  # for yolo v5s 
         self.model.eval()
       
 
     def main_cb(self, msg):
         try:
 
-            cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+            np_arr = np.frombuffer(msg.data, np.uint8)
+            cv_frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
             results = self.model(cv_frame)
             labels = results.names
             detections = results.pred[0]
@@ -48,7 +53,6 @@ class YoloNode(Node):
                 self.get_logger().info("Stop sign detected")
                
             else:
-                # self.get_logger().info("No stop sign")
                 stop_msg = Bool()
                 stop_msg.data = False
                 self.stop_sign_publisher.publish(stop_msg)

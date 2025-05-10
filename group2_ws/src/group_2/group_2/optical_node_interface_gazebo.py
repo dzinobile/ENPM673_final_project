@@ -214,5 +214,3 @@ class OpticalNode(Node):
             self.get_logger().error(traceback.format_exc()) 
 
         return None
-
-

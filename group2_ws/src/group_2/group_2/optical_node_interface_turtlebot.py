@@ -11,13 +11,16 @@ from geometry_msgs.msg import TwistStamped
 import sys
 import numpy as np
 from std_msgs.msg import Float64MultiArray
+from rclpy.callback_groups import ReentrantCallbackGroup
 from std_msgs.msg import Bool
+import time 
 
 class OpticalNode(Node):
     def __init__(self, node_name='optical_node'):
     
         super().__init__(node_name)
 
+        self.multi_thread_group = ReentrantCallbackGroup()
         which_robot = int(sys.argv[1])
         if which_robot == 1:
             topic_prefix = '/tb4_1'
@@ -29,10 +32,8 @@ class OpticalNode(Node):
         self.subscription_horizon_line = self.create_subscription(Float64MultiArray, topic_prefix+'/horizon_line', self.horizon_cb,1)
         self.stop_publisher = self.create_publisher(Bool,topic_prefix+'/stop_robot',1)
         self.horizon_not_initialized = True
-        self.x_0 = None 
-        self.y_0 = None
-        self.x_w = None
-        self.y_w = None
+        self.avg_horizon_value = None
+        self.vanishing_points = None
         self.object_detected = False
         self.frame1 = None 
         self.frame2 = None
@@ -62,14 +63,19 @@ class OpticalNode(Node):
 
     def horizon_cb(self,msg):
         self.horizon_not_initialized = False
-        self.x_0, self.y_0, self.x_w, self.y_w = msg.data
+        data = msg.data
+        length    = len(data)//2
+        vp = [ (data[2*i], data[2*i+1]) for i in range(length)]
+        self.vanishing_points  = [ (data[2*i], data[2*i+1]) for i in range(length)]
+        y_values = [y for (_, y) in self.vanishing_points]
+        self.avg_horizon_value = sum(y_values) / len(y_values)
         self.get_logger().info(f"Received Horizon value")
         return None
     
 
     def of_crop(self, gray, wpl=0.15, wph=0.85, hpl=.5, hph=1):
         H, W = gray.shape
-        return gray[int((self.y_0+self.y_w)/2):int(hph*H), int(wpl*W):int(wph*W)]
+        return gray[int(self.avg_horizon_value):int(hph*H), int(wpl*W):int(wph*W)]
     
     def of_convert_gray(self, bgr):
         return cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
@@ -100,7 +106,7 @@ class OpticalNode(Node):
         mag_corr = mag - b 
         mag_corr[mag_corr < 0] = 0 
         
-        thresh = 1.0 #Tuning parameter
+        thresh = 5.0 #Tuning parameter
         mask = (mag_corr > thresh)
         activated_vals = mag_corr[mask]
         if activated_vals.size:
@@ -145,8 +151,6 @@ class OpticalNode(Node):
 
 
     def main_cb(self, msg):
-
-
         if self.horizon_not_initialized:
             self.get_logger().info("Waiting for horizon finder to find horizon")
             return None
@@ -162,10 +166,6 @@ class OpticalNode(Node):
                 return None
             self.frame2 = self.of_standardize(cv_frame)
 
-
-            # Drawing the horizon line
-            cv2.line(cv_frame, (0,int(self.y_0)), (width,int(self.y_w)), (0,0,255), 2)
-
             #-----------------------------Optical Flow logic start---------------------------------
             # Optical Flow code
 
@@ -174,7 +174,7 @@ class OpticalNode(Node):
 
             x1 = int(wpl * width)
             x2 = int(wph * width)
-            y1 = int((self.y_0+self.y_w)/2)
+            y1 = int(self.avg_horizon_value)
             y2 = int(hph * height)
 
 

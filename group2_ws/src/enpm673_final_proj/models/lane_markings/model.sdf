@@ -8,6 +8,7 @@
         <uri>model://checkerboard_6_8_0_03</uri>
         <pose>0.8 -0.06 0 0 0 0.760685</pose>
       </include>
+<<<<<<< HEAD
 
       <!-- <include> -->
       <!--   <name>diamond</name> -->
@@ -15,10 +16,17 @@
       <!--   <pose>0.696717 0.294755 0 0 0 0.760685</pose> -->
       <!-- </include> -->
 
+=======
+      
+>>>>>>> origin/zinobile
       <include>
-        <name>paper0</name>
+        <name>diamond</name>
         <uri>model://paper_letter_size</uri>
+<<<<<<< HEAD
         <pose>0.696717 0.3 0 0 0 0.0</pose>
+=======
+        <pose>0.696717 0.294755 0 0 0 0</pose>
+>>>>>>> origin/zinobile
       </include>
 
       <include>
@@ -32,25 +40,25 @@
         <uri>model://paper_letter_size</uri>
         <pose>0.690265 1.39362 0 0 0 0</pose>
       </include>
-
+    
       <include>
         <name>paper3</name>
         <uri>model://paper_letter_size</uri>
         <pose>0.482471 2.02232 0 0 0 0.75</pose>
       </include>
-
+      
       <include>
         <name>paper4</name>
         <uri>model://paper_letter_size</uri>
         <pose>-0.082798 2.34506 0 0 0 1.5</pose>
       </include>
-
+        
       <include>
         <name>paper5</name>
         <uri>model://paper_letter_size</uri>
         <pose>-0.649394 1.93556 0 0 0 -3.4415926</pose>
       </include>
-
+          
       <include>
         <name>paper6</name>
         <uri>model://paper_letter_size</uri>
@@ -63,7 +71,7 @@
         <pose>-0.856204 0.476271 0 0 0 -3.1415926</pose>
       </include>
 
-
+      
       <static>1</static>
       <allow_auto_disable>1</allow_auto_disable>
     </model>

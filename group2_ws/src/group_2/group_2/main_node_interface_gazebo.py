@@ -141,6 +141,7 @@ class MainNode(Node):
 
         if self.horizon_not_initialized:
             self.get_logger().info("Waiting for horizon finder to find horizon")
+<<<<<<< HEAD
             # if self.stop_sign_detected:
             #     try :
             #         cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
@@ -159,6 +160,9 @@ class MainNode(Node):
             #     image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
             #     self.publisher_processed.publish(image_msg)
                     
+=======
+      
+>>>>>>> origin/zinobile
             if self.frame_count % 50 ==0:
                 msg = Twist()
                 msg.linear.x = 0.001
@@ -183,12 +187,17 @@ class MainNode(Node):
                 self.get_logger().info("Unsafe motion detected... stopping robot")
                 label = "Unsafe - Object detected"
                 color = (0, 0, 255)
+                cv2.putText(cv_frame, label, (30, 100), cv2.FONT_HERSHEY_SIMPLEX,1.0,color,2, cv2.LINE_AA)
+
                 image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
                 self.publisher_processed.publish(image_msg)
                 self.stop_robot()
+<<<<<<< HEAD
                 cv2.putText(cv_frame, label, (30, 100), cv2.FONT_HERSHEY_SIMPLEX,1.0,color,2, cv2.LINE_AA)
                 image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
                 self.publisher_processed.publish(image_msg)
+=======
+>>>>>>> origin/zinobile
                 return None
             else:
                 label = "Safe to Move - No object"
@@ -236,14 +245,24 @@ class MainNode(Node):
 
                     #cv2.drawFrameAxes(cv_frame,self.camera_matrix,dist_coeffs,rvec,tvec,0.05)
                     rotation_matrix,_ = cv2.Rodrigues(closest_rvec)
-                    marker_x_axis = rotation_matrix[:,0]
-                    x_axis_proj = np.array([marker_x_axis[0], 0, marker_x_axis[2]])
-                    x_axis_proj /= np.linalg.norm(x_axis_proj)
-                    yaw = np.arctan2(x_axis_proj[0], x_axis_proj[2])
+                    if sys.argv[1] == "x":
 
-                    # Define two 3D points: one at the origin of the marker, another along the x-axis direction
-                    arrow_start_3d = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Marker origin
-                    arrow_end_3d = np.array([[0.1, 0.0, 0.0]], dtype=np.float32)    # 10 cm along x-axis
+                        marker_x_axis = rotation_matrix[:,0]
+                        x_axis_proj = np.array([marker_x_axis[0], 0, marker_x_axis[2]])
+                        x_axis_proj /= np.linalg.norm(x_axis_proj)
+                        yaw = np.arctan2(x_axis_proj[0], x_axis_proj[2])
+
+                        # Define two 3D points: one at the origin of the marker, another along the x-axis direction
+                        arrow_start_3d = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Marker origin
+                        arrow_end_3d = np.array([[0.1, 0.0, 0.0]], dtype=np.float32)    # 10 cm along x-axis
+                    
+                    elif sys.argv[1] == "y":
+                        marker_y_axis = rotation_matrix[:,1]
+                        y_axis_proj = np.array([marker_y_axis[0], 0, marker_y_axis[2]])
+                        y_axis_proj /= np.linalg.norm(y_axis_proj)
+                        yaw = np.arctan2(y_axis_proj[0], y_axis_proj[2])
+                        arrow_start_3d = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Marker origin
+                        arrow_end_3d = np.array([[0.0, 0.1, 0.0]], dtype=np.float32)    # 10 cm along x-axis
 
                     # Project to 2D image plane
                     start_2d, _ = cv2.projectPoints(arrow_start_3d, closest_rvec, closest_tvec, self.camera_matrix, dist_coeffs)
@@ -277,5 +296,3 @@ class MainNode(Node):
             self.get_logger().error(traceback.format_exc()) 
 
         return None
-
-

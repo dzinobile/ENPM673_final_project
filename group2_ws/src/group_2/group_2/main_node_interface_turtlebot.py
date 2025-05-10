@@ -12,11 +12,15 @@ import sys
 import numpy as np
 from std_msgs.msg import Float64MultiArray
 from std_msgs.msg import Bool
-
+from rclpy.callback_groups import ReentrantCallbackGroup
+import time 
 class MainNode(Node):
     def __init__(self, node_name='main_node'):
     
         super().__init__(node_name)
+
+        self.multi_thread_group = ReentrantCallbackGroup()
+
 
         which_robot = int(sys.argv[1])
         if which_robot == 1:
@@ -29,50 +33,70 @@ class MainNode(Node):
         self.publisher_cmd_vel= self.create_publisher(TwistStamped,topic_prefix+'/cmd_vel', 10)
         self.subscription_horizon_line = self.create_subscription(Float64MultiArray, topic_prefix+'/horizon_line', self.horizon_cb,1)
         self.publisher_processed = self.create_publisher(CompressedImage,topic_prefix+'/final_display', 1)
-        self.model = torch.hub.load('yolov5','yolov5s', source='local')
         self.subscription_optical=self.create_subscription(Bool,topic_prefix+'/stop_robot',self.of_cb,10)
-        self.model.eval()
+        self.subscription_stop=self.create_subscription(Bool,topic_prefix+'/stop_sign',self.stop_sign_cb,1,callback_group=self.multi_thread_group)
+
         self.horizon_not_initialized = True
-        self.x_0 = None 
-        self.y_0 = None
-        self.x_w = None
-        self.y_w = None
+        
+        self.vanishing_points = None
+        self.y_0 = None 
+        self.y_1 = None 
+        self.y_2 = None 
+        self.y_3 = None 
+        self.frame_count = 0
         self.object_detected = False
+        self.stop_sign_detected  = False
         self.camera_matrix = np.matrix([
             [610.78565932,   0.        , 154.50548085],
             [  0.        , 594.07200631, 127.60019182],
             [  0.        ,   0.        ,   1.        ]])
         self.no_aruco_detected = 0
-        self.frame1 = None 
-        self.frame2 = None
-        self.smoothed_u = None 
-        self.smoothed_v = None 
-        self.alpha = 0.8
         
-        self.publisher_flow_image = self.create_publisher(
-            CompressedImage,
-            topic_prefix+'/flow_image',
-            10
-        )
-
-        self.publisher_residual_image = self.create_publisher(
-            CompressedImage, 
-            topic_prefix+'/residual_flow_image', 
-            10
-        )
+    @staticmethod
+    def horizon_line_drawer(image, vanishing_points):
+        h, w = image.shape[:2]
+        for (x_value, y_value) in vanishing_points:
+            x_point = int(round(x_value))
+            y_point = int(round(y_value))
+            cv2.circle(image, (x_point, y_point), 5, (0, 0, 255), -1)
         
-        self.publisher_mask_image = self.create_publisher(
-            CompressedImage, 
-            topic_prefix+'/flow_mask_image', 
-            10
-        )
+        if len(vanishing_points) == 1:
+            y_0 = int(round(vanishing_points[0][1]))
+            y_0 = np.clip(y_0, 0, h - 1)
+            cv2.line(image,(0,   y_0),(w-1, y_0),color=(255, 255, 0),thickness=2)
+            return image
+        
+        
+        # Converting  to numpy array
+        vanishing_points_array = np.array(vanishing_points)
 
+        # Fitting  y = mx + c using least squares
+        x = vanishing_points_array[:, 0]
+        y = vanishing_points_array[:, 1]
+        A = np.vstack([x, np.ones_like(x)]).T
+        m, c = np.linalg.lstsq(A, y, rcond=None)[0]
+        h, w = image.shape[:2]
 
+        # Computing y at left and right edges of the image
+        y1 = int(round(m * 0 + c))
+        y2 = int(round(m * (w - 1) + c))
+
+        # Clipping y values to image edges
+        y1 = max(0, min(h - 1, y1))
+        y2 = max(0, min(h - 1, y2))
+        cv2.line(image, (0, y1), (w - 1, y2), (255, 255, 0), 2)
+    
+        return image
 
     def stop_robot(self):
         msg = TwistStamped()
         msg.twist.linear.x = 0.0   
+        msg.twist.linear.y = 0.0
+        msg.twist.linear.z = 0.0
+        msg.twist.angular.x = 0.0
+        msg.twist.angular.y = 0.0
         msg.twist.angular.z = 0.0  
+
         self.publisher_cmd_vel.publish(msg)
         self.get_logger().info("Stopping the TurtleBot")
         return None
@@ -103,16 +127,22 @@ class MainNode(Node):
 
 
     def horizon_cb(self,msg):
-        self.horizon_not_initialized = False
-        self.x_0, self.y_0, self.x_w, self.y_w = msg.data
+        self.horizon_not_initialized = False  
+        data = msg.data
+        length    = len(data)//2
+        self.vanishing_points  = [ (data[2*i], data[2*i+1]) for i in range(length)]
         self.get_logger().info(f"Received Horizon value")
+        
         return None
     
 
-
+    def stop_sign_cb(self,msg):
+        self.stop_sign_detected = msg.data
+        return None
+   
 
     def main_cb(self,msg):
-
+        self.frame_count = self.frame_count +1
         aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
         parameters = cv2.aruco.DetectorParameters()
         dist_coeffs = np.zeros((5,))
@@ -120,6 +150,16 @@ class MainNode(Node):
 
         if self.horizon_not_initialized:
             self.get_logger().info("Waiting for horizon finder to find horizon")
+      
+            if self.frame_count % 50 ==0:
+                msg = TwistStamped()
+                msg.twist.linear.x = 0.001
+                msg.twist.linear.y = 0.0  
+                msg.twist.linear.z = 0.0   
+                msg.twist.angular.x = 0.0  
+                msg.twist.angular.y = 0.0  
+                msg.twist.angular.z = 0.0   
+                self.publisher_cmd_vel.publish(msg)
             return None
     
         try:
@@ -129,16 +169,16 @@ class MainNode(Node):
             cv_frame_gray = cv2.cvtColor(cv_frame, cv2.COLOR_BGR2GRAY)
             height, width = cv_frame.shape[:2]
             # Drawing the horizon line
-            cv2.line(cv_frame, (0,int(self.y_0)), (width,int(self.y_w)), (0,0,255), 2)
+            cv_frame =self.horizon_line_drawer(cv_frame, self.vanishing_points)
 
             if self.object_detected:
                 self.get_logger().info("Unsafe motion detected... stopping robot")
-                label = "Unsafe"
+                label = "Unsafe - Object detected"
                 color = (0, 0, 255)
                 cv2.putText(
                     cv_frame, 
                     label, 
-                    (10, 30), 
+                    (30, 100), 
                     cv2.FONT_HERSHEY_SIMPLEX,
                     1.0,
                     color,
@@ -154,13 +194,13 @@ class MainNode(Node):
                 self.stop_robot()
                 return None
             else:
-                label = "Safe"
+                label = "Safe to Move - No object"
                 color = (0, 255, 0)
 
                 cv2.putText(
                     cv_frame, 
                     label, 
-                    (10, 30), 
+                    (30, 100), 
                     cv2.FONT_HERSHEY_SIMPLEX,
                     1.0,
                     color,
@@ -172,23 +212,12 @@ class MainNode(Node):
 
 
             #--------------------------------Stop sign logic start--------------------------------
-            #  Run inference
-            results = self.model(cv_frame)
-            labels = results.names
-            detections = results.pred[0]
-            stop_sign_detected = False
-            for *box, conf, cls in detections:
-                label = labels[int(cls)]
-                if label.lower() == "stop sign":
-                    stop_sign_detected = True
-                    x1, y1, x2, y2 = map(int, box)
-                    cv2.rectangle(cv_frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-                    cv2.putText(cv_frame, f"{label} ({conf:.2f})", (x1, y1 - 10),cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)      
-            
-            if stop_sign_detected:
+           
+            if self.stop_sign_detected:
                 self.get_logger().info("Stop sign detected")
                 self.stop_robot()  # To stop the robot
-                #image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+                label = "Stop sign detected"
+                cv2.putText(cv_frame, label,(30, 30),cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)    
                 image_msg = CompressedImage()
                 image_msg.header.stamp = self.get_clock().now().to_msg()
                 image_msg.format = 'jpeg'
@@ -229,14 +258,23 @@ class MainNode(Node):
 
                     #cv2.drawFrameAxes(cv_frame,self.camera_matrix,dist_coeffs,rvec,tvec,0.05)
                     rotation_matrix,_ = cv2.Rodrigues(closest_rvec)
-                    marker_x_axis = rotation_matrix[:,0]
-                    x_axis_proj = np.array([marker_x_axis[0], 0, marker_x_axis[2]])
-                    x_axis_proj /= np.linalg.norm(x_axis_proj)
-                    yaw = np.arctan2(x_axis_proj[0], x_axis_proj[2])
+                    if sys.argv[2] == "x":
+                        marker_x_axis = rotation_matrix[:,0]
+                        x_axis_proj = np.array([marker_x_axis[0], 0, marker_x_axis[2]])
+                        x_axis_proj /= np.linalg.norm(x_axis_proj)
+                        yaw = np.arctan2(x_axis_proj[0], x_axis_proj[2])
 
-                    # Define two 3D points: one at the origin of the marker, another along the x-axis direction
-                    arrow_start_3d = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Marker origin
-                    arrow_end_3d = np.array([[0.1, 0.0, 0.0]], dtype=np.float32)    # 10 cm along x-axis
+                        # Define two 3D points: one at the origin of the marker, another along the x-axis direction
+                        arrow_start_3d = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Marker origin
+                        arrow_end_3d = np.array([[0.1, 0.0, 0.0]], dtype=np.float32)    # 10 cm along x-axis
+
+                    elif sys.argv[2] == "y":
+                        marker_y_axis = rotation_matrix[:,1]
+                        y_axis_proj = np.array([marker_y_axis[0], 0, marker_y_axis[2]])
+                        y_axis_proj /= np.linalg.norm(y_axis_proj)
+                        yaw = np.arctan2(y_axis_proj[0], y_axis_proj[2])
+                        arrow_start_3d = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Marker origin
+                        arrow_end_3d = np.array([[0.0, 0.1, 0.0]], dtype=np.float32)    # 10 cm along x-axis
 
                     # Project to 2D image plane
                     start_2d, _ = cv2.projectPoints(arrow_start_3d, closest_rvec, closest_tvec, self.camera_matrix, dist_coeffs)
