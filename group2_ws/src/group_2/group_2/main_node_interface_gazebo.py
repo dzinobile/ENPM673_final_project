@@ -141,8 +141,7 @@ class MainNode(Node):
 
         if self.horizon_not_initialized:
             self.get_logger().info("Waiting for horizon finder to find horizon")
-      
-            if self.frame_count % 50 ==0:
+            if self.frame_count % 25 ==0:
                 msg = Twist()
                 msg.linear.x = 0.001
                 msg.linear.y = 0.0  

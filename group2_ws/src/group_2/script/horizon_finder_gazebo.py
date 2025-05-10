@@ -193,7 +193,7 @@ class HorizonfinderNode(Node):
                     A = np.vstack([x, np.ones_like(x)]).T
                     m, c = np.linalg.lstsq(A, y, rcond=None)[0]
 
-                    if abs(m) < 0.05: 
+                    if abs(m) < 0.005: 
                         self.get_logger().info(f"Frame {self.frame_count}: Good horizon detected.")  
                         flat = [float(v) for pt in vanishing_points for v in pt]
                         msg  = Float64MultiArray(data=flat)

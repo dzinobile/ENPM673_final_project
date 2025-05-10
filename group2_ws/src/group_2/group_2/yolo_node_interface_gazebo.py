@@ -44,7 +44,7 @@ class YoloNode(Node):
             if self.stop_detected:
                 stop_msg = Bool()
                 stop_msg.data = True
-                self.stop_sign_publisher.publish(stop_msg)
+                # self.stop_sign_publisher.publish(stop_msg)
                 self.get_logger().info("Stop sign detected")
                
             else:
