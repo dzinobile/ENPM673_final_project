@@ -1,0 +1,25 @@
+source /opt/ros/humble/setup.bash
+source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash
+
+export ROS_DOMAIN_ID=0
+export ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+export ROS_SUPER_CLIENT=True
+#export ROS_DISCOVERY_SERVER="192.168.79.228:11811;"
+#source ~/ros2_ws/install/setup.bash
+#source ~/ros2_ws/install/setup.bash
+export TURTLEBOT3_MODEL=waffle
+export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:turtlebot3_project3/share/turtlebot3_project3/models/
+export TORCH_CPP_LOG_LEVEL=ERROR
+alias tb1_server='export ROS_DISCOVERY_SERVER="192.168.79.228:11811;" && ros2 daemon stop && ros2 daemon start'
+alias tb2_server='export ROS_DISCOVERY_SERVER=";192.168.79.215:11888;" && ros2 daemon stop && ros2 daemon start'
+alias tb1_ping='ping 192.168.79.228'
+alias tb2_ping='ping 192.168.79.215'
+alias tb1_reset='ros2 service call /tb4_1/reset_pose irobot_create_msgs/srv/ResetPose "{pose: {position: {x: 0.0, y: 0.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}}"'
+alias tb2_reset='ros2 service call /tb4_2/reset_pose irobot_create_msgs/srv/ResetPose "{pose: {position: {x: 0.0, y: 0.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}}"'
+alias cb='colcon build && source install/setup.bash'
+alias sc='source install/setup.bash'
+alias tb1_view='ros2 run image_view image_view --ros-args --remap image:=/tb4_1/final_display'
+alias tb2_view='ros2 run image_view image_view --ros-args --remap image:=/tb4_2/final_display'
+alias tb1_maskview='ros2 run image_view image_view --ros-args --remap image:=/tb4_1/flow_mask_image'
+alias tb2_maskview='ros2 run image_view image_view --ros-args --remap image:=/tb4_2/flow_mask_image'
