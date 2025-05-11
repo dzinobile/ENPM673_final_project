@@ -12,9 +12,9 @@ from collections import Counter
 from std_msgs.msg import Float64MultiArray
 from ament_index_python.packages import get_package_share_directory
 import sys
-from rclpy.qos import QoSProfile,HistoryPolicy,ReliabilityPolicy
-qos_buffer1 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=1,reliability=ReliabilityPolicy.RELIABLE)
-qos_buffer10 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=10,reliability=ReliabilityPolicy.RELIABLE)
+from rclpy.qos import QoSProfile,HistoryPolicy,ReliabilityPolicy,DurabilityPolicy
+qos_buffer1 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=1,reliability=ReliabilityPolicy.RELIABLE,durability=DurabilityPolicy.VOLATILE)
+qos_buffer10 = qos_buffer1 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=10,reliability=ReliabilityPolicy.RELIABLE,durability=DurabilityPolicy.VOLATILE)
 
 package_share = get_package_share_directory('group_2')  
 config_path = os.path.join(package_share, 'config', 'params.yaml')

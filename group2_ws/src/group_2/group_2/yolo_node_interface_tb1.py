@@ -13,9 +13,9 @@ import numpy as np
 from std_msgs.msg import Float64MultiArray
 from std_msgs.msg import Bool
 import time 
-from rclpy.qos import QoSProfile,HistoryPolicy,ReliabilityPolicy
-qos_buffer1 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=1,reliability=ReliabilityPolicy.RELIABLE)
-qos_buffer10 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=10,reliability=ReliabilityPolicy.RELIABLE)
+from rclpy.qos import QoSProfile,HistoryPolicy,ReliabilityPolicy,DurabilityPolicy
+qos_buffer1 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=1,reliability=ReliabilityPolicy.RELIABLE,durability=DurabilityPolicy.VOLATILE)
+qos_buffer10 = qos_buffer1 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=10,reliability=ReliabilityPolicy.RELIABLE,durability=DurabilityPolicy.VOLATILE)
 
 class YoloNode(Node):
     def __init__(self, node_name='yolo_node'):

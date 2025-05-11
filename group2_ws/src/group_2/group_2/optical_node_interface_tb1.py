@@ -12,9 +12,9 @@ import traceback
 import time
 import sys
 from sensor_msgs.msg import CompressedImage
-from rclpy.qos import QoSProfile,HistoryPolicy,ReliabilityPolicy
-qos_buffer1 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=1,reliability=ReliabilityPolicy.RELIABLE)
-qos_buffer10 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=10,reliability=ReliabilityPolicy.RELIABLE)
+from rclpy.qos import QoSProfile,HistoryPolicy,ReliabilityPolicy,DurabilityPolicy
+qos_buffer1 = qos_buffer1 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=1,reliability=ReliabilityPolicy.RELIABLE,durability=DurabilityPolicy.VOLATILE)
+qos_buffer10 = qos_buffer1 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=10,reliability=ReliabilityPolicy.RELIABLE,durability=DurabilityPolicy.VOLATILE)
 class OpticalNode(Node):
     def __init__(self, node_name='optical_node'):
         super().__init__(node_name)

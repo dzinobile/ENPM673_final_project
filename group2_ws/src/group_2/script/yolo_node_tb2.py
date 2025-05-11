@@ -2,7 +2,7 @@
 import rclpy
 
 # Import the custom PublisherNode class
-from group_2.group_2.yolo_node_interface_tb2 import (
+from group_2.yolo_node_interface_tb2 import (
     YoloNode,
 )
 
