@@ -26,11 +26,11 @@ class MainNode(Node):
         topic_prefix = '/tb4_1'
 
         self.cv_bridge = CvBridge()
-        self.subscription_image = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed', self.main_cb,1)
+        self.subscription_image = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed', self.main_cb,1,callback_group=self.multi_thread_group)
         self.publisher_cmd_vel= self.create_publisher(TwistStamped,topic_prefix+'/cmd_vel', 10)
-        self.subscription_horizon_line = self.create_subscription(Float64MultiArray, topic_prefix+'/horizon_line', self.horizon_cb,1)
-        self.publisher_processed = self.create_publisher(CompressedImage,topic_prefix+'/final_display', 10)
-        self.subscription_optical=self.create_subscription(Bool,topic_prefix+'/stop_robot',self.of_cb,10)
+        self.subscription_horizon_line = self.create_subscription(Float64MultiArray, topic_prefix+'/horizon_line', self.horizon_cb,1,callback_group=self.multi_thread_group)
+        self.publisher_processed = self.create_publisher(CompressedImage,topic_prefix+'/final_display', 1)
+        self.subscription_optical=self.create_subscription(Bool,topic_prefix+'/stop_robot',self.of_cb,1,callback_group=self.multi_thread_group)
         self.subscription_stop=self.create_subscription(Bool,topic_prefix+'/stop_sign',self.stop_sign_cb,1,callback_group=self.multi_thread_group)
 
         self.horizon_not_initialized = True
@@ -171,16 +171,7 @@ class MainNode(Node):
                 self.get_logger().info("Unsafe motion detected... stopping robot")
                 label = "Unsafe - Object detected"
                 color = (0, 0, 255)
-                cv2.putText(
-                    cv_frame, 
-                    label, 
-                    (30, 100), 
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    1.0,
-                    color,
-                    2, 
-                    cv2.LINE_AA
-                        )
+                cv2.putText(cv_frame, label, (30, 100), cv2.FONT_HERSHEY_SIMPLEX,1.0,color, 2, cv2.LINE_AA)
                 image_msg = CompressedImage()
                 image_msg.header.stamp = self.get_clock().now().to_msg()
                 image_msg.format = 'jpeg'
@@ -193,16 +184,7 @@ class MainNode(Node):
                 label = "Safe to Move - No object"
                 color = (0, 255, 0)
 
-                cv2.putText(
-                    cv_frame, 
-                    label, 
-                    (30, 100), 
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    1.0,
-                    color,
-                    2, 
-                    cv2.LINE_AA
-                        )
+                cv2.putText(cv_frame, label, (30, 100), cv2.FONT_HERSHEY_SIMPLEX,1.0,color,2,  cv2.LINE_AA)
                
 
 

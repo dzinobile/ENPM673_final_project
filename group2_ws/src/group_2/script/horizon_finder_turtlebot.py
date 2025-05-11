@@ -39,12 +39,15 @@ class HorizonfinderNode(Node):
     def __init__(self, node_name='horizon_finder'):
         super().__init__(node_name)
 
-        topic_prefix = '/tb4_1'
+        which_robot = 1
+        if which_robot == 1:
+            topic_prefix = '/tb4_1'
+        elif which_robot == 2:
+            topic_prefix = '/tb4_2'
 
         self.cv_bridge = CvBridge()
         self.subscription = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed', self.frame_cb,10)
         self.publish_horizon = self.create_publisher(Float64MultiArray, topic_prefix+'/horizon_line', 10)
-        self.publish_good_horizon = self.create_publisher(Float64MultiArray, topic_prefix+'/good_horizon_line', 10)
         self.one_vp_not_published = True
         self.frame_count = 0
         self.horizon_initialized = False
@@ -199,19 +202,17 @@ class HorizonfinderNode(Node):
                     A = np.vstack([x, np.ones_like(x)]).T
                     m, c = np.linalg.lstsq(A, y, rcond=None)[0]
 
-                    if abs(m) < 0.05: 
+                    if abs(m) < 0.01: 
                         self.get_logger().info(f"Frame {self.frame_count}: Good horizon detected.")  
                         flat = [float(v) for pt in vanishing_points for v in pt]
                         msg  = Float64MultiArray(data=flat)
                         self.publish_horizon.publish(msg)
-                        self.publish_good_horizon.publish(msg)
                         self.get_logger().info("Published good horizon line details")
                         if self.debug:
                             cv2.imwrite(os.path.join(MAIN_DEBUG_DIR, DEBUG_DIRS['good_horizon'], f"frame_{self.frame_count:04d}.jpg"), horizon_frame)
                         flat = [float(v) for pt in vanishing_points for v in pt]
                         msg  = Float64MultiArray(data=flat)
                         self.publish_horizon.publish(msg)
-                        self.publish_good_horizon.publish(msg)
                         self.get_logger().info("Published good horizon line details")
                         self.get_logger().info("Horizon Initialization complete")
                         self.get_logger().info("Node will now shut down.")
