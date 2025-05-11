@@ -39,14 +39,10 @@ class HorizonfinderNode(Node):
     def __init__(self, node_name='horizon_finder'):
         super().__init__(node_name)
 
-        which_robot = int(sys.argv[1])
-        if which_robot == 1:
-            topic_prefix = '/tb4_1'
-        elif which_robot == 2:
-            topic_prefix = '/tb4_2'
+        topic_prefix = '/tb4_1'
 
         self.cv_bridge = CvBridge()
-        self.subscription = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/image_raw/compressed', self.frame_cb,10)
+        self.subscription = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed', self.frame_cb,10)
         self.publish_horizon = self.create_publisher(Float64MultiArray, topic_prefix+'/horizon_line', 10)
         self.publish_good_horizon = self.create_publisher(Float64MultiArray, topic_prefix+'/good_horizon_line', 10)
         self.one_vp_not_published = True

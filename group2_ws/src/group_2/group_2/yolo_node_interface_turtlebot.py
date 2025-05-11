@@ -19,7 +19,7 @@ class YoloNode(Node):
     
         super().__init__(node_name)
 
-        which_robot = int(sys.argv[1])
+        which_robot = 2
         if which_robot == 1:
             topic_prefix = '/tb4_1'
         elif which_robot == 2:
@@ -29,7 +29,7 @@ class YoloNode(Node):
         self.subscription_image = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed', self.main_cb,1)
         self.stop_sign_publisher = self.create_publisher(Bool,topic_prefix+'/stop_sign',1)
         self.stop_detected = False
-        self.model = torch.hub.load('yolov5', 'yolov5n',source='local')  # for yolo v5 nano
+        self.model = torch.hub.load('yolov5', 'yolov5s',source='local')  # for yolo v5 nano
         self.model.eval()
       
 

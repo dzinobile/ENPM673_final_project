@@ -22,17 +22,14 @@ class MainNode(Node):
         self.multi_thread_group = ReentrantCallbackGroup()
 
 
-        which_robot = int(sys.argv[1])
-        if which_robot == 1:
-            topic_prefix = '/tb4_1'
-        elif which_robot == 2:
-            topic_prefix = '/tb4_2'
+
+        topic_prefix = '/tb4_1'
 
         self.cv_bridge = CvBridge()
         self.subscription_image = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed', self.main_cb,1)
         self.publisher_cmd_vel= self.create_publisher(TwistStamped,topic_prefix+'/cmd_vel', 10)
         self.subscription_horizon_line = self.create_subscription(Float64MultiArray, topic_prefix+'/horizon_line', self.horizon_cb,1)
-        self.publisher_processed = self.create_publisher(CompressedImage,topic_prefix+'/final_display', 1)
+        self.publisher_processed = self.create_publisher(CompressedImage,topic_prefix+'/final_display', 10)
         self.subscription_optical=self.create_subscription(Bool,topic_prefix+'/stop_robot',self.of_cb,10)
         self.subscription_stop=self.create_subscription(Bool,topic_prefix+'/stop_sign',self.stop_sign_cb,1,callback_group=self.multi_thread_group)
 
@@ -97,7 +94,7 @@ class MainNode(Node):
         msg.twist.angular.y = 0.0
         msg.twist.angular.z = 0.0  
 
-        self.publisher_cmd_vel.publish(msg)
+        # self.publisher_cmd_vel.publish(msg)
         self.get_logger().info("Stopping the TurtleBot")
         return None
     
@@ -107,7 +104,6 @@ class MainNode(Node):
         # Forward and sideways distances (in camera frame)
         x = tvec[0][0]   # left-right (positive = right)
         z = tvec[0][2]   # forward distance (positive = forward)
-
         msg.twist.linear.x = 0.1
         msg.twist.angular.z = 0.0
         if z < 1.2:
@@ -119,7 +115,7 @@ class MainNode(Node):
             msg.twist.angular.z = np.clip(msg.twist.angular.z,-1,1)
 
         # Publish the command
-        self.publisher_cmd_vel.publish(msg)
+        #self.publisher_cmd_vel.publish(msg)
 
     def of_cb(self,msg):
         self.object_detected = msg.data
@@ -159,7 +155,7 @@ class MainNode(Node):
                 msg.twist.angular.x = 0.0  
                 msg.twist.angular.y = 0.0  
                 msg.twist.angular.z = 0.0   
-                self.publisher_cmd_vel.publish(msg)
+                # self.publisher_cmd_vel.publish(msg)
             return None
     
         try:
@@ -258,23 +254,14 @@ class MainNode(Node):
 
                     #cv2.drawFrameAxes(cv_frame,self.camera_matrix,dist_coeffs,rvec,tvec,0.05)
                     rotation_matrix,_ = cv2.Rodrigues(closest_rvec)
-                    if sys.argv[2] == "x":
-                        marker_x_axis = rotation_matrix[:,0]
-                        x_axis_proj = np.array([marker_x_axis[0], 0, marker_x_axis[2]])
-                        x_axis_proj /= np.linalg.norm(x_axis_proj)
-                        yaw = np.arctan2(x_axis_proj[0], x_axis_proj[2])
+                    marker_x_axis = rotation_matrix[:,0]
+                    x_axis_proj = np.array([marker_x_axis[0], 0, marker_x_axis[2]])
+                    x_axis_proj /= np.linalg.norm(x_axis_proj)
+                    yaw = np.arctan2(x_axis_proj[0], x_axis_proj[2])
 
-                        # Define two 3D points: one at the origin of the marker, another along the x-axis direction
-                        arrow_start_3d = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Marker origin
-                        arrow_end_3d = np.array([[0.1, 0.0, 0.0]], dtype=np.float32)    # 10 cm along x-axis
-
-                    elif sys.argv[2] == "y":
-                        marker_y_axis = rotation_matrix[:,1]
-                        y_axis_proj = np.array([marker_y_axis[0], 0, marker_y_axis[2]])
-                        y_axis_proj /= np.linalg.norm(y_axis_proj)
-                        yaw = np.arctan2(y_axis_proj[0], y_axis_proj[2])
-                        arrow_start_3d = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Marker origin
-                        arrow_end_3d = np.array([[0.0, 0.1, 0.0]], dtype=np.float32)    # 10 cm along x-axis
+                    # Define two 3D points: one at the origin of the marker, another along the x-axis direction
+                    arrow_start_3d = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Marker origin
+                    arrow_end_3d = np.array([[0.1, 0.0, 0.0]], dtype=np.float32)    # 10 cm along x-axis
 
                     # Project to 2D image plane
                     start_2d, _ = cv2.projectPoints(arrow_start_3d, closest_rvec, closest_tvec, self.camera_matrix, dist_coeffs)
@@ -286,18 +273,18 @@ class MainNode(Node):
 
                     # Draw the arrow on the image
                     cv2.arrowedLine(cv_frame, start_pt, end_pt, (0, 255, 0), 3, tipLength=0.3)
-                    self.aruco_move_robot(closest_tvec,yaw)
+                    #self.aruco_move_robot(closest_tvec,yaw)
                     self.no_aruco_detected = 0
 
             else:
-                if self.no_aruco_detected > 50:
+                if self.no_aruco_detected > 50000:
                     self.stop_robot()
                     
                 else:
                     self.get_logger().info("no aruco detected")
                     tvec = [[2.0,2.0,2.0],[2.0,2.0,2.0]]
                     yaw = 0.0
-                    self.aruco_move_robot(tvec,yaw)
+                    #self.aruco_move_robot(tvec,yaw)
                     self.no_aruco_detected += 1
             #image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
             image_msg = CompressedImage()
