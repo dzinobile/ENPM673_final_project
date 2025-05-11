@@ -30,7 +30,7 @@ class YoloNode(Node):
         self.subscription_image = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed', self.main_cb,qos_profile=qos_buffer1)
         self.stop_sign_publisher = self.create_publisher(Bool,topic_prefix+'/stop_sign',1)
         self.stop_detected = False
-        self.model = torch.hub.load('yolov5', 'yolov5s',source='local')  # for yolo v5 nano
+        self.model = torch.hub.load('yolov5', 'yolov5n',source='local')  # for yolo v5 nano
         self.model.eval()
       
 
