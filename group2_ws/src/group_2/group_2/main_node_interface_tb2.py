@@ -2,32 +2,37 @@
 from rclpy.node import Node
 from std_msgs.msg import Float32, Int32
 import random
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage
 from cv_bridge import CvBridge
 import cv2
 import torch
 import traceback
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped
 import sys
 import numpy as np
 from std_msgs.msg import Float64MultiArray
 from std_msgs.msg import Bool
 from rclpy.callback_groups import ReentrantCallbackGroup
 import time 
-
 class MainNode(Node):
     def __init__(self, node_name='main_node'):
     
         super().__init__(node_name)
 
         self.multi_thread_group = ReentrantCallbackGroup()
+
+
+
+        topic_prefix = '/tb4_2'
+
         self.cv_bridge = CvBridge()
-        self.subscription_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,1,callback_group=self.multi_thread_group)
-        self.publisher_cmd_vel= self.create_publisher(Twist,'/cmd_vel', 10)
-        self.subscription_horizon_line = self.create_subscription(Float64MultiArray, '/horizon_line', self.horizon_cb,1,callback_group=self.multi_thread_group)
-        self.publisher_processed = self.create_publisher(Image,'/final_display', 1)
-        self.subscription_optical=self.create_subscription(Bool,'/stop_robot',self.of_cb,1,callback_group=self.multi_thread_group)
-        self.subscription_stop=self.create_subscription(Bool,'/stop_sign',self.stop_sign_cb,1,callback_group=self.multi_thread_group)
+        self.subscription_image = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed', self.main_cb,1,callback_group=self.multi_thread_group)
+        self.publisher_cmd_vel= self.create_publisher(TwistStamped,topic_prefix+'/cmd_vel', 10)
+        self.subscription_horizon_line = self.create_subscription(Float64MultiArray, topic_prefix+'/horizon_line', self.horizon_cb,1,callback_group=self.multi_thread_group)
+        self.publisher_processed = self.create_publisher(CompressedImage,topic_prefix+'/final_display', 1)
+        self.subscription_optical=self.create_subscription(Bool,topic_prefix+'/stop_robot',self.of_cb,1,callback_group=self.multi_thread_group)
+        self.subscription_stop=self.create_subscription(Bool,topic_prefix+'/stop_sign',self.stop_sign_cb,1,callback_group=self.multi_thread_group)
+
         self.horizon_not_initialized = True
         
         self.vanishing_points = None
@@ -81,31 +86,32 @@ class MainNode(Node):
         return image
 
     def stop_robot(self):
-        msg = Twist()
-        msg.linear.x = 0.0   
-        msg.linear.y = 0.0  
-        msg.linear.z = 0.0   
-        msg.angular.x = 0.0  
-        msg.angular.y = 0.0  
-        msg.angular.z = 0.0  
+        msg = TwistStamped()
+        msg.twist.linear.x = 0.0   
+        msg.twist.linear.y = 0.0
+        msg.twist.linear.z = 0.0
+        msg.twist.angular.x = 0.0
+        msg.twist.angular.y = 0.0
+        msg.twist.angular.z = 0.0  
+
         self.publisher_cmd_vel.publish(msg)
         self.get_logger().info("Stopping the TurtleBot")
         return None
     
     def aruco_move_robot(self,tvec,yaw):
         self.get_logger().info("aruco move")
-        msg = Twist()
+        msg = TwistStamped()
         # Forward and sideways distances (in camera frame)
         x = tvec[0][0]   # left-right (positive = right)
         z = tvec[0][2]   # forward distance (positive = forward)
+        msg.twist.linear.x = 0.1
 
-        msg.linear.x = 0.1
         self.get_logger().info("aruco turn")
         yaw = yaw-0.255
         print(yaw)
         angular_k = 0.2
-        msg.angular.z = -angular_k * yaw  # Rotate to align with marker long axis
-        msg.angular.z = np.clip(msg.angular.z,-1,1)
+        msg.twist.angular.z = -angular_k * yaw  # Rotate to align with marker long axis
+        msg.twist.angular.z = np.clip(msg.twist.angular.z,-1,1)
 
         # Publish the command
         self.publisher_cmd_vel.publish(msg)
@@ -136,13 +142,15 @@ class MainNode(Node):
         parameters = cv2.aruco.DetectorParameters()
         dist_coeffs = np.zeros((5,))
         marker_length = 0.1
+
+
     
         try:
 
-            cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+            np_arr = np.frombuffer(msg.data, np.uint8)
+            cv_frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
             cv_frame_gray = cv2.cvtColor(cv_frame, cv2.COLOR_BGR2GRAY)
             height, width = cv_frame.shape[:2]
-
             # Drawing the horizon line
             if self.vanishing_points is not None:
                 cv_frame =self.horizon_line_drawer(cv_frame, self.vanishing_points)
@@ -151,29 +159,42 @@ class MainNode(Node):
                 self.get_logger().info("Unsafe motion detected... stopping robot")
                 label = "Unsafe - Object detected"
                 color = (0, 0, 255)
-                cv2.putText(cv_frame, label, (30, 100), cv2.FONT_HERSHEY_SIMPLEX,1.0,color,2, cv2.LINE_AA)
-
-                image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+                cv2.putText(cv_frame, label, (30, 100), cv2.FONT_HERSHEY_SIMPLEX,1.0,color, 2, cv2.LINE_AA)
+                image_msg = CompressedImage()
+                image_msg.header.stamp = self.get_clock().now().to_msg()
+                image_msg.format = 'jpeg'
+                _,buffer = cv2.imencode('.jpg',cv_frame)
+                image_msg.data = np.array(buffer).tobytes()
                 self.publisher_processed.publish(image_msg)
                 self.stop_robot()
                 return None
             else:
                 label = "Safe to Move - No object"
                 color = (0, 255, 0)
-                cv2.putText(cv_frame, label, (30, 100), cv2.FONT_HERSHEY_SIMPLEX,1.0,color,2, cv2.LINE_AA)
+
+                cv2.putText(cv_frame, label, (30, 100), cv2.FONT_HERSHEY_SIMPLEX,1.0,color,2,  cv2.LINE_AA)
                
 
+
+
             #--------------------------------Stop sign logic start--------------------------------
+           
             if self.stop_sign_detected:
                 self.get_logger().info("Stop sign detected")
                 self.stop_robot()  # To stop the robot
                 label = "Stop sign detected"
                 cv2.putText(cv_frame, label,(30, 30),cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)    
-                image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+                image_msg = CompressedImage()
+                image_msg.header.stamp = self.get_clock().now().to_msg()
+                image_msg.format = 'jpeg'
+                _,buffer = cv2.imencode('.jpg',cv_frame)
+                image_msg.data = np.array(buffer).tobytes()
                 self.publisher_processed.publish(image_msg)
                 return None  # Go to next frame
             #--------------------------------Stop sign logic end--------------------------------
-            
+
+
+
 
 
 
@@ -203,8 +224,6 @@ class MainNode(Node):
 
                     #cv2.drawFrameAxes(cv_frame,self.camera_matrix,dist_coeffs,rvec,tvec,0.05)
                     rotation_matrix,_ = cv2.Rodrigues(closest_rvec)
-                    
-
                     marker_x_axis = rotation_matrix[:,0]
                     x_axis_proj = np.array([marker_x_axis[0], 0, marker_x_axis[2]])
                     x_axis_proj /= np.linalg.norm(x_axis_proj)
@@ -213,7 +232,6 @@ class MainNode(Node):
                     # Define two 3D points: one at the origin of the marker, another along the x-axis direction
                     arrow_start_3d = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)  # Marker origin
                     arrow_end_3d = np.array([[0.1, 0.0, 0.0]], dtype=np.float32)    # 10 cm along x-axis
-                
 
                     # Project to 2D image plane
                     start_2d, _ = cv2.projectPoints(arrow_start_3d, closest_rvec, closest_tvec, self.camera_matrix, dist_coeffs)
@@ -238,7 +256,12 @@ class MainNode(Node):
                     yaw = 0.0
                     self.aruco_move_robot(tvec,yaw)
                     self.no_aruco_detected += 1
-            image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+            
+            image_msg = CompressedImage()
+            image_msg.header.stamp = self.get_clock().now().to_msg()
+            image_msg.format = 'jpeg'
+            _,buffer = cv2.imencode('.jpg',cv_frame)
+            image_msg.data = np.array(buffer).tobytes()
             self.publisher_processed.publish(image_msg)
             #-----------------------------Regular path following logic end---------------------------
 
@@ -247,3 +270,5 @@ class MainNode(Node):
             self.get_logger().error(traceback.format_exc()) 
 
         return None
+
+

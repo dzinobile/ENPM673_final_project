@@ -94,7 +94,7 @@ class MainNode(Node):
         msg.twist.angular.y = 0.0
         msg.twist.angular.z = 0.0  
 
-        # self.publisher_cmd_vel.publish(msg)
+        self.publisher_cmd_vel.publish(msg)
         self.get_logger().info("Stopping the TurtleBot")
         return None
     
@@ -105,17 +105,16 @@ class MainNode(Node):
         x = tvec[0][0]   # left-right (positive = right)
         z = tvec[0][2]   # forward distance (positive = forward)
         msg.twist.linear.x = 0.1
-        msg.twist.angular.z = 0.0
-        if z < 1.2:
-            self.get_logger().info("aruco turn")
-            yaw = yaw-0.255
-            print(yaw)
-            angular_k = 0.5
-            msg.twist.angular.z = -angular_k * yaw  # Rotate to align with marker long axis
-            msg.twist.angular.z = np.clip(msg.twist.angular.z,-1,1)
+
+        self.get_logger().info("aruco turn")
+        yaw = yaw-0.255
+        print(yaw)
+        angular_k = 0.2
+        msg.twist.angular.z = -angular_k * yaw  # Rotate to align with marker long axis
+        msg.twist.angular.z = np.clip(msg.twist.angular.z,-1,1)
 
         # Publish the command
-        #self.publisher_cmd_vel.publish(msg)
+        self.publisher_cmd_vel.publish(msg)
 
     def of_cb(self,msg):
         self.object_detected = msg.data
@@ -144,19 +143,7 @@ class MainNode(Node):
         dist_coeffs = np.zeros((5,))
         marker_length = 0.1
 
-        if self.horizon_not_initialized:
-            self.get_logger().info("Waiting for horizon finder to find horizon")
-      
-            if self.frame_count % 50 ==0:
-                msg = TwistStamped()
-                msg.twist.linear.x = 0.001
-                msg.twist.linear.y = 0.0  
-                msg.twist.linear.z = 0.0   
-                msg.twist.angular.x = 0.0  
-                msg.twist.angular.y = 0.0  
-                msg.twist.angular.z = 0.0   
-                # self.publisher_cmd_vel.publish(msg)
-            return None
+
     
         try:
 
@@ -165,7 +152,8 @@ class MainNode(Node):
             cv_frame_gray = cv2.cvtColor(cv_frame, cv2.COLOR_BGR2GRAY)
             height, width = cv_frame.shape[:2]
             # Drawing the horizon line
-            cv_frame =self.horizon_line_drawer(cv_frame, self.vanishing_points)
+            if self.vanishing_points is not None:
+                cv_frame =self.horizon_line_drawer(cv_frame, self.vanishing_points)
 
             if self.object_detected:
                 self.get_logger().info("Unsafe motion detected... stopping robot")
@@ -255,20 +243,20 @@ class MainNode(Node):
 
                     # Draw the arrow on the image
                     cv2.arrowedLine(cv_frame, start_pt, end_pt, (0, 255, 0), 3, tipLength=0.3)
-                    #self.aruco_move_robot(closest_tvec,yaw)
+                    self.aruco_move_robot(closest_tvec,yaw)
                     self.no_aruco_detected = 0
 
             else:
-                if self.no_aruco_detected > 50000:
+                if self.no_aruco_detected > 200:
                     self.stop_robot()
                     
                 else:
                     self.get_logger().info("no aruco detected")
                     tvec = [[2.0,2.0,2.0],[2.0,2.0,2.0]]
                     yaw = 0.0
-                    #self.aruco_move_robot(tvec,yaw)
+                    self.aruco_move_robot(tvec,yaw)
                     self.no_aruco_detected += 1
-            #image_msg = self.cv_bridge.cv2_to_imgmsg(cv_frame, encoding='bgr8')
+            
             image_msg = CompressedImage()
             image_msg.header.stamp = self.get_clock().now().to_msg()
             image_msg.format = 'jpeg'
