@@ -13,20 +13,21 @@ import numpy as np
 from std_msgs.msg import Float64MultiArray
 from std_msgs.msg import Bool
 import time 
+from rclpy.qos import QoSProfile,HistoryPolicy,ReliabilityPolicy
+qos_buffer1 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=1,reliability=ReliabilityPolicy.RELIABLE)
+qos_buffer10 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=10,reliability=ReliabilityPolicy.RELIABLE)
 
 class YoloNode(Node):
     def __init__(self, node_name='yolo_node'):
     
         super().__init__(node_name)
 
-        which_robot = 2
-        if which_robot == 1:
-            topic_prefix = '/tb4_1'
-        elif which_robot == 2:
-            topic_prefix = '/tb4_2'
+
+        topic_prefix = '/tb4_2'
+
 
         self.cv_bridge = CvBridge()
-        self.subscription_image = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed', self.main_cb,1)
+        self.subscription_image = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed', self.main_cb,qos_profile=qos_buffer1)
         self.stop_sign_publisher = self.create_publisher(Bool,topic_prefix+'/stop_sign',1)
         self.stop_detected = False
         self.model = torch.hub.load('yolov5', 'yolov5s',source='local')  # for yolo v5 nano

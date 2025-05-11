@@ -3,15 +3,15 @@ import rclpy
 from rclpy.executors import MultiThreadedExecutor
 
 # Import the custom PublisherNode class
-from group_2.main_node_interface_turtlebot import (
-    MainNode,
+from group_2.optical_node_interface_tb1 import (
+    OpticalNode,
 )
 
 
 def main(args=None):
 
     rclpy.init(args=args)  
-    node = MainNode("main_node")
+    node = OpticalNode("main_node")
     executor = MultiThreadedExecutor()
     executor.add_node(node)
     try:
@@ -20,7 +20,6 @@ def main(args=None):
         executor.shutdown()
         node.destroy_node()
         rclpy.shutdown()
-
 
 if __name__ == "__main__":
     main() 

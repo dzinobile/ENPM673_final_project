@@ -13,7 +13,9 @@ import numpy as np
 from std_msgs.msg import Float64MultiArray
 from std_msgs.msg import Bool
 from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
 import time 
+qos_buffer1 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=1,reliability=ReliabilityPolicy.RELIABLE)
 class MainNode(Node):
     def __init__(self, node_name='main_node'):
     
@@ -26,7 +28,7 @@ class MainNode(Node):
         topic_prefix = '/tb4_2'
 
         self.cv_bridge = CvBridge()
-        self.subscription_image = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed', self.main_cb,1,callback_group=self.multi_thread_group)
+        self.subscription_image = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed', self.main_cb,callback_group=self.multi_thread_group,qos_profile=qos_buffer1)
         self.publisher_cmd_vel= self.create_publisher(TwistStamped,topic_prefix+'/cmd_vel', 10)
         self.subscription_horizon_line = self.create_subscription(Float64MultiArray, topic_prefix+'/horizon_line', self.horizon_cb,1,callback_group=self.multi_thread_group)
         self.publisher_processed = self.create_publisher(CompressedImage,topic_prefix+'/final_display', 1)

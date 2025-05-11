@@ -23,13 +23,17 @@ install(PROGRAMS script/horizon_finder_gazebo.py
   script/save_video.py
   script/save_video2.py
   script/main_node_gazebo.py
-  script/main_node_turtlebot.py
+  script/main_node_tb1.py
+  script/main_node_tb2.py
   script/optical_node_gazebo.py
-  script/optical_node_turtlebot.py
+  script/optical_node_tb1.py
+  script/optical_node_tb2.py
   script/horizon_finder_gazebo.py
-  script/horizon_finder_turtlebot.py
+  script/horizon_finder_tb1.py
+  script/horizon_finder_tb2.py
   script/yolo_node_gazebo.py
-  script/yolo_node_turtlebot.py
+  script/yolo_node_tb1.py
+  script/yolo_node_tb2.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

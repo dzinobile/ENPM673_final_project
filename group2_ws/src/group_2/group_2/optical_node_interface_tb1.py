@@ -1,29 +1,37 @@
 #!/usr/bin/env python3
-from rclpy.node import Node
-from std_msgs.msg import Float32, Int32
-import random
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
 import cv2
-import torch
-import traceback
-from geometry_msgs.msg import Twist
-import sys
 import numpy as np
-from std_msgs.msg import Float64MultiArray
+import rclpy
+from rclpy.node import Node
 from rclpy.callback_groups import ReentrantCallbackGroup
-from std_msgs.msg import Bool
-
+from sensor_msgs.msg import Image
+from std_msgs.msg import Bool, Float64MultiArray
+from cv_bridge import CvBridge
+from geometry_msgs.msg import Twist
+import traceback
+import time
+import sys
+from sensor_msgs.msg import CompressedImage
+from rclpy.qos import QoSProfile,HistoryPolicy,ReliabilityPolicy
+qos_buffer1 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=1,reliability=ReliabilityPolicy.RELIABLE)
+qos_buffer10 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=10,reliability=ReliabilityPolicy.RELIABLE)
 class OpticalNode(Node):
     def __init__(self, node_name='optical_node'):
-    
         super().__init__(node_name)
 
-        self.multi_thread_group = ReentrantCallbackGroup()
+        topic_prefix = '/tb4_1'
+
+        # CV Bridge & threading
         self.cv_bridge = CvBridge()
-        self.subscription_image = self.create_subscription(Image,'/camera/image_raw', self.main_cb,10,callback_group=self.multi_thread_group)
-        # self.subscription_horizon_line = self.create_subscription(Float64MultiArray, '/horizon_line', self.horizon_cb,1,callback_group=self.multi_thread_group)
-        self.stop_publisher = self.create_publisher(Bool,'/stop_robot',1)        # self.horizon_initialized = False
+        self.multi_thread_group = ReentrantCallbackGroup()
+        
+        # Horizon-line integration
+        self.subscription_image = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed', self.main_cb,qos_profile=qos_buffer10)
+        self.subscription_horizon_line = self.create_subscription(Float64MultiArray, topic_prefix+'/horizon_line', self.horizon_cb,callback_group=self.multi_thread_group,qos_profile=qos_buffer1)
+        self.stop_publisher = self.create_publisher(Bool,topic_prefix+'/stop_robot',1)
+        self.horizon_initialized = False
+        self.avg_horizon_value = None
+        self.vanishing_points = None
         self.avg_horizon_value = None
         self.vanishing_points = None
         self.object_detected = False
@@ -31,7 +39,6 @@ class OpticalNode(Node):
         self.frame2 = None
         self.smoothed_u = None 
         self.smoothed_v = None 
-        self.alpha = 0.8
         self.S = None
         self.HPL = 0.5
         self.HPH  = 1.0
@@ -39,30 +46,30 @@ class OpticalNode(Node):
         self.WPH = 1.0
         self.STANDARD_SIZE = (250, 250)
         
-        self.publisher_flow_image = self.create_publisher(Image,'/flow_image',10)
 
-        self.publisher_residual_image = self.create_publisher(Image, '/residual_flow_image', 10)
         
-        self.publisher_mask_image = self.create_publisher(Image, '/flow_mask_image',10)
 
+        # Image subscription
+        self.subscription_image = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed',self.main_cb,1,callback_group=self.multi_thread_group)
 
-    # def horizon_cb(self,msg):
-    #     if self.horizon_initialized:
-    #         self.destroy_subscription(self.subscription_horizon_line) 
-    #         return None
-    #     data = msg.data
-    #     length    = len(data)//2
-    #     vp = [ (data[2*i], data[2*i+1]) for i in range(length)]
-    #     self.vanishing_points  = [ (data[2*i], data[2*i+1]) for i in range(length)]
-    #     y_values = [y for (_, y) in self.vanishing_points]
-    #     self.avg_horizon_value = sum(y_values) / len(y_values)
-    #     self.get_logger().info(f"Received Horizon value")
-    #     return None
+        # self.publisher_flow_image = self.create_publisher(CompressedImage,topic_prefix+'/flow_image',10)
 
-    def convert_gray(self, bgr: np.ndarray) -> np.ndarray:
+        # self.publisher_residual_image = self.create_publisher(CompressedImage, topic_prefix+'/residual_flow_image', 10)
+        
+        self.publisher_mask_image = self.create_publisher(CompressedImage, topic_prefix+'/flow_mask_image', 10)
+
+        # Internal state
+        self.frame1 = None
+        self.alpha  = 0.8
+
+    def horizon_cb(self,msg):
+        self.get_logger().info(f"Received Horizon value")
+        return None
+
+    def convert_gray(self, bgr):
         return cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
 
-    def crop_roi(self, gray: np.ndarray) -> np.ndarray:
+    def crop_roi(self, gray):
         H, W = gray.shape
 
         # Raw indices
@@ -79,18 +86,18 @@ class OpticalNode(Node):
 
         return gray[y1:y2, x1:x2]
 
-    def standardize(self, frame: np.ndarray) -> np.ndarray:
+    def standardize(self, frame):
         resized = cv2.resize(frame, self.STANDARD_SIZE, interpolation=cv2.INTER_AREA)
-        gray    = self.convert_gray(resized)
+        gray = self.convert_gray(resized)
         return self.crop_roi(gray)
 
-    def optical_flow(self, f1: np.ndarray, f2: np.ndarray) -> np.ndarray:
+    def optical_flow(self, f1, f2):
         return cv2.calcOpticalFlowFarneback(
             f1, f2, None,
             0.5, 3, 30, 3, 5, 1.2, 0
         )
 
-    def flow_image(self, flow: np.ndarray) -> np.ndarray:
+    def flow_image(self, flow):
         mag, ang = cv2.cartToPolar(flow[...,0], flow[...,1])
         hsv = np.zeros((flow.shape[0], flow.shape[1], 3), dtype=np.uint8)
         hsv[...,0] = (ang * 180/np.pi/2).astype(np.uint8)
@@ -98,7 +105,10 @@ class OpticalNode(Node):
         hsv[...,2] = cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX)
         return cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 
-    def estimate_affine_ransac(self, flow: np.ndarray, shape: tuple, thresh: float=1.0):
+    def estimate_affine_ransac(self, flow, shape, thresh=1.0):
+        """
+        Fits a 2x3 affine transformation to the openCV-computed optical flow point correspondences, returning the matrix and inlier markings.
+        """
         H, W = shape
         Y, X = np.indices((H,W))
         pts1 = np.stack((X.ravel(), Y.ravel()), axis=1).astype(np.float32)
@@ -111,14 +121,20 @@ class OpticalNode(Node):
             return None, None
         return M, inliers.reshape(H, W)
 
-    def generate_affine_flow(self, shape: tuple, M: np.ndarray) -> np.ndarray:
+    def generate_affine_flow(self, shape, M):
+        """
+        Computes the model-predicted flow image using the affine transform, returning it.
+        """
         H, W = shape
         Y, X = np.indices((H,W))
         pts = np.stack((X.ravel(), Y.ravel()), axis=1).astype(np.float32)
         warped = cv2.transform(pts.reshape(-1,1,2), M).reshape(H,W,2)
         return warped - np.stack((X,Y), axis=2)
-        
+    
     def smooth_mask_ema(self, raw_mask):
+        """
+        Applies an exponential moving average filter to the flow mask to smooth it temporally. 
+        """
         ALPHA = 0.2
         TAU = 0.7
         raw_mask_float = raw_mask.astype(np.float32)
@@ -127,8 +143,11 @@ class OpticalNode(Node):
         else:
             self.S[:] = ALPHA * raw_mask_float + (1 - ALPHA) * self.S
         return (self.S >= TAU).astype(np.uint8)
-        
+
     def residual_analysis(self, flow, est_flow, inlier_mask, min_percent: float=5.0):
+        """
+        Decides whether or not an obstacle is detected based on the difference (residual) between the affine model flow and the apparent (Farnb.) computed flow at each pixel. The decision is ultimately a matter of counting outliers. 
+        """
         residual = flow - est_flow
         mag, ang  = cv2.cartToPolar(residual[...,0], residual[...,1])
         mask = (inlier_mask == 0)
@@ -147,60 +166,56 @@ class OpticalNode(Node):
         return cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR), (mask*255).astype(np.uint8), detected
 
     def main_cb(self, msg: Image):
-        #if not self.horizon_initialized:
-        #    self.get_logger().info(f"Waiting for horizon node")
-        #    return None
+        # if not self.horizon_initialized:
+        #     return None
 
         try:
-            cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, 'bgr8')
-
-            # 1) Initialize frame1 (fallback or horizon ROI)
+            #cv_frame = self.cv_bridge.imgmsg_to_cv2(msg, 'bgr8')
+            np_arr = np.frombuffer(msg.data, np.uint8)
+            cv_frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+            # Initialize frame 1 and convert to gray and crop
             if self.frame1 is None:
                 self.frame1 = self.standardize(cv_frame)
                 return
 
-            # 2) Crop frame2 with the same ROI
+            # Crop frame 2 and convert to gray
             frame2 = self.standardize(cv_frame)
 
-            # 3) Guard against empty ROI
+            # Handle the case of an empty ROI
             if frame2.size == 0:
                 self.get_logger().error(f"Empty ROI: shape {frame2.shape}")
                 self.frame1 = frame2.copy()
                 return
 
-            # 4) Compute optical flow
+            # Compute dense optical flow
             flow = self.optical_flow(self.frame1, frame2)
 
-            # 5) Estimate ego-motion and RANSAC
+            # Model the typical flow with an affine transformation
             M, inliers = self.estimate_affine_ransac(flow, self.frame1.shape)
             if M is None or inliers is None:
                 self.frame1 = frame2.copy()
                 return
             est_flow = self.generate_affine_flow(self.frame1.shape, M)
 
-            # 6) Residual & detection
+            # Decide on obstacle based on reprojection error
             residual_img, mask_gray, detected = self.residual_analysis(flow, est_flow, inliers)
 
-            # # 7) Publish visuals
-            # self.publisher_flow_image.publish(
-            #     self.cv_bridge.cv2_to_imgmsg(self.flow_image(flow), encoding='bgr8')
-            # )
-            # self.publisher_residual_image.publish(
-            #     self.cv_bridge.cv2_to_imgmsg(residual_img, encoding='bgr8')
-            # )
-            self.publisher_mask_image.publish(
-                self.cv_bridge.cv2_to_imgmsg(mask_gray, encoding='mono8')
-            )
 
-            # 8) Publish stop robot flag
+            mask_msg = CompressedImage()
+            mask_msg.header.stamp = self.get_clock().now().to_msg()
+            mask_msg.format = 'jpeg'
+            _,buffer = cv2.imencode('.jpg',mask_gray)
+            mask_msg.data = np.array(buffer).tobytes()
+            self.publisher_mask_image.publish(mask_msg)
+
+            # Publish the robot stop flag
             stop_msg = Bool()
             stop_msg.data = bool(detected)
             self.stop_publisher.publish(stop_msg)
 
-            # 9) Slide window
+            # Complete a frame update
             self.frame1 = frame2.copy()
 
         except Exception as e:
             self.get_logger().error(f"Error in processing frame: {e}")
             self.get_logger().error(traceback.format_exc())
-

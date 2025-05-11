@@ -12,6 +12,10 @@ from collections import Counter
 from std_msgs.msg import Float64MultiArray
 from ament_index_python.packages import get_package_share_directory
 import sys
+from rclpy.qos import QoSProfile,HistoryPolicy,ReliabilityPolicy
+qos_buffer1 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=1,reliability=ReliabilityPolicy.RELIABLE)
+qos_buffer10 = QoSProfile(history=HistoryPolicy.KEEP_LAST,depth=10,reliability=ReliabilityPolicy.RELIABLE)
+
 package_share = get_package_share_directory('group_2')  
 config_path = os.path.join(package_share, 'config', 'params.yaml')
 
@@ -39,14 +43,12 @@ class HorizonfinderNode(Node):
     def __init__(self, node_name='horizon_finder'):
         super().__init__(node_name)
 
-        which_robot = 1
-        if which_robot == 1:
-            topic_prefix = '/tb4_1'
-        elif which_robot == 2:
-            topic_prefix = '/tb4_2'
+
+        topic_prefix = '/tb4_2'
+
 
         self.cv_bridge = CvBridge()
-        self.subscription = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed', self.frame_cb,10)
+        self.subscription = self.create_subscription(CompressedImage,topic_prefix+'/oakd/rgb/preview/image_raw/compressed', self.frame_cb,qos_profile=qos_buffer10)
         self.publish_horizon = self.create_publisher(Float64MultiArray, topic_prefix+'/horizon_line', 10)
         self.one_vp_not_published = True
         self.frame_count = 0

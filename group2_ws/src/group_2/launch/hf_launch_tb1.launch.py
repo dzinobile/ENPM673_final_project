@@ -13,7 +13,7 @@ def generate_launch_description():
         # Node configuration
         Node(
             package='group_2',
-            executable='horizon_finder_turtlebot.py',
+            executable='horizon_finder_tb1.py',
             output='screen',
             parameters=[
                 {"debug": LaunchConfiguration("debug")},
